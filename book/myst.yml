@@ -1,0 +1,46 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  title: Confidential Computing Deep Dive
+  description: A comprehensive guide to Confidential Computing, TEEs, Kata Containers, and CNCF Confidential Containers.
+  authors:
+    - name: Pradipta Banerjee
+      affiliations:
+        - Engineer Lead, Confidential Containers
+  keywords:
+    - confidential computing
+    - TEE
+    - trusted execution environment
+    - kata containers
+    - confidential containers
+    - AMD SEV-SNP
+    - Intel TDX
+    - remote attestation
+  toc:
+    - file: intro.md
+    - title: What is Confidential Computing?
+      file: chapters/01_overview.md
+    - title: Use Cases
+      file: chapters/02_use_cases.md
+    - title: Building Blocks
+      file: chapters/03_building_blocks.md
+    - title: Trusted Execution Environments
+      file: chapters/04_tee.md
+    - title: Remote Attestation
+      file: chapters/05_remote_attestation.md
+    - title: Three Pillars of Confidential Computing
+      file: chapters/06_three_pillars.md
+    - title: Solution Stack
+      file: chapters/07_solution_stack.md
+    - title: Kata Containers
+      file: chapters/08_kata_containers.md
+    - title: Confidential Containers (CoCo)
+      file: chapters/09_confidential_containers.md
+    - title: Operational Aspects
+      file: chapters/10_operational_aspects.md
+    - title: Integrations & Ecosystem
+      file: chapters/11_integrations.md
+    - title: Market Landscape
+      file: chapters/12_market_landscape.md
+site:
+  template: book-theme
