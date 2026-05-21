@@ -2,33 +2,30 @@
 
 ## What Are Confidential Containers?
 
-```{figure} ../images/page_56.png
-:alt: Confidential Containers definition
-:align: center
 Confidential Containers — a generic term for containers deployed inside Trusted Execution Environments (TEEs).
-```
 
-> *"The CoCo project aims to enable users to run containers inside TEEs on any Kubernetes cluster, with minimal changes to their existing applications and workflows."*
+> *"The CNCF CoCo project aims to enable users to run containers inside TEEs on any Kubernetes cluster, with minimal changes to their existing applications and workflows."*
 
-## CNCF Confidential Containers Project
+## CNCF Confidential Containers (CoCo) Project
+
+The CNCF CoCo project provides a common foundation for deploying containers inside VM- or process-based TEEs on any Kubernetes cluster, and includes Trustee — a remote attestation service based on IETF RATS.
 
 ```{figure} ../images/page_57.png
 :alt: CNCF Confidential Containers Project overview
 :align: center
-The CNCF CoCo project provides a common foundation for deploying containers inside VM- or process-based TEEs on any Kubernetes cluster, and includes Trustee — a remote attestation service based on IETF RATS.
 ```
 
-```{figure} ../images/page_58.png
-:alt: CNCF CoCo three deployment approaches
-:align: center
-CoCo provides three deployment approaches: (1) Confidential containers using VM-based TEEs on a local hypervisor; (2) Confidential containers using VM-based TEEs on a remote hypervisor (peer-pods); (3) Confidential containers using process-based TEEs (e.g., Intel SGX).
-```
+CoCo provides two deployment approaches:
+
+1. Confidential containers using VM-based TEEs on a local hypervisor
+2. Confidential containers using VM-based TEEs on a remote hypervisor (peer-pods)
 
 ---
 
 ## From Kata to CoCo: The Key Difference
 
 Kata Containers **protects the host from the workload**.
+
 CoCo **protects the workload from the host**.
 
 | | Kata Containers | CoCo |
@@ -44,51 +41,60 @@ CoCo **protects the workload from the host**.
 
 ## Architecture: CoCo/bare-metal (Local Hypervisor)
 
+The Confidential VM (CVM) runs on the worker node inside the TEE hardware. Inside the CVM: kata-agent manages containers, image-rs downloads encrypted images, the Confidential Data Hub (CDH) serves as the secret retrieval proxy, and the Attestation Agent (AA) produces hardware-backed evidence. Container images are always downloaded inside the CVM, never on the host.
+
 ```{figure} ../images/page_59.png
 :alt: High Level Architecture — CoCo/bare-metal
 :align: center
-CoCo/bare-metal: the Confidential VM (CVM) runs on the worker node inside the TEE hardware. Inside the CVM: kata-agent manages containers, image-rs downloads encrypted images, the Confidential Data Hub (CDH) serves as the secret retrieval proxy, and the Attestation Agent (AA) produces hardware-backed evidence. Container images are always downloaded inside the CVM, never on the host.
 ```
 
 ---
 
 ## Architecture: CoCo/peer-pods (Remote Hypervisor)
 
+The Confidential VM runs external to the worker node. The worker node hosts only the kata-runtime and cloud-api-adaptor. The CVM handles all TEE operations, attestation, and encrypted image downloads.
+
 ```{figure} ../images/page_60.png
 :alt: High Level Architecture — CoCo/peer-pods
 :align: center
-CoCo/peer-pods: same as bare-metal but the Confidential VM runs externally in the cloud. The worker node hosts only the kata-runtime and cloud-api-adaptor. The CVM in the cloud handles all TEE operations, attestation, and encrypted image downloads.
+
 ```
 
 ---
 
 ## CoCo Threat Model
 
+The untrusted components include the host OS, KVM hypervisor, cloud provider software, other VMs on the same host, other processes on the host machine, and the Kubernetes control plane (kubelet, etcd, API server).
+
+Application code vulnerabilities, availability attacks, and software TEEs are out of scope.
+
 ```{figure} ../images/page_61.png
 :alt: CoCo Threat Model — protect the workload from the host
 :align: center
-CoCo threat model: untrusted components include the host OS, KVM hypervisor, cloud provider software, other VMs on the same host, other processes on the host machine, and the Kubernetes control plane (kubelet, etcd, API server). Out of scope: application code vulnerabilities, availability attacks, and software TEEs.
 ```
 
 ---
 
 ## Integrity Protection for CoCo CVM Images
 
+Dm-verity protected read-only OS rootfs prevents tampering with the CVM image. The kernel, kernel cmd line, and initrd are measured and included in the attestation report. Any change to the OS image changes the measurements, causing attestation to fail.
+
 ```{figure} ../images/page_62.png
 :alt: Integrity Protection for CoCo CVM images
 :align: center
-dm-verity protected read-only OS rootfs prevents tampering with the CVM image. The kernel, kernel cmdline, and initrd are measured and included in the attestation report. Any change to the OS image changes the measurements, causing attestation to fail.
 ```
+
+Ref: [Building trust into OS images](https://confidentialcontainers.org/blog/2024/03/01/building-trust-into-os-images-for-confidential-containers/)
 
 ---
 
 ## CoCo CVM Requirements
 
-```{figure} ../images/page_63.png
-:alt: CoCo CVM Requirements
-:align: center
-CoCo CVM requirements: (1) read-only rootfs with integrity protection (dm-verity/fs-verity + composefs); (2) memory-backed filesystem or LUKS-encrypted ephemeral disk for read-write storage (container images); (3) measured boot support.
-```
+Following are the key CVM requirements for CoCo:
+
+1. Read-only rootfs with integrity protection (dm-verity/fs-verity + composefs)
+2. Memory-backed filesystem or LUKS-encrypted ephemeral disk for read-write storage (container images)
+3. Measured boot support.
 
 ### Read-Only Rootfs with Integrity Protection
 
@@ -99,16 +105,6 @@ CoCo CVM requirements: (1) read-only rootfs with integrity protection (dm-verity
 ### Encrypted Ephemeral Disk
 
 For container image layers and ephemeral writes, a **LUKS-encrypted disk** uses an **ephemeral key** generated inside the TEE at runtime — never persisted, never leaving the TEE.
-
----
-
-## Integrity Protection for CoCo Workloads
-
-```{figure} ../images/page_64.png
-:alt: Integrity Protection for CoCo workloads
-:align: center
-Challenges: dynamic pod mutations (container creation/updates/deletions via Kubernetes RPC) and automatic addition of SERVICE_* environment variables. Solutions: policy enforcement (genpolicy/KubeArmor), init-data for measured initial configuration, and change logging via hardware RoT.
-```
 
 ---
 

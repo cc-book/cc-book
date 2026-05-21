@@ -6,7 +6,7 @@ project:
   authors:
     - name: Pradipta Banerjee
       affiliations:
-        - Engineer Lead, Confidential Containers
+        - CNCF Confidential Containers
   keywords:
     - confidential computing
     - TEE
@@ -24,8 +24,8 @@ project:
       file: chapters/02_use_cases.md
     - title: Building Blocks
       file: chapters/03_building_blocks.md
-    - title: Trusted Execution Environments
-      file: chapters/04_tee.md
+    - title: The Trust Boundary Problem
+      file: chapters/04_trust_boundary.md
     - title: Remote Attestation
       file: chapters/05_remote_attestation.md
     - title: Three Pillars of Confidential Computing

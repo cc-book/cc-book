@@ -12,7 +12,7 @@ CoCo integration status with cloud-native projects: Tekton Pipelines, Tekton Cha
 
 ---
 
-## KServe ModelServing (Complete)
+## KServe ModelServing
 
 This is one of the most impactful CoCo integrations — enabling **confidential AI inference**.
 
@@ -28,13 +28,13 @@ CoCo + KServe allows serving ML models where:
 
 ---
 
-## Tekton Chains (Complete)
+## Tekton Chains
 
 Supply chain security for CI/CD — pipeline jobs run inside TEEs, build artifacts are **signed using keys only accessible inside the TEE**, and attestation proves the signing happened in a trusted environment.
 
 ---
 
-## Eclipse Che / Dev Spaces (Complete)
+## Eclipse Che / Dev Spaces
 
 Confidential development environments — your entire IDE workspace runs inside a TEE, protecting source code and intellectual property from the IDE platform operator.
 
@@ -42,13 +42,13 @@ Confidential development environments — your entire IDE workspace runs inside 
 
 ---
 
-## KubeArmor (WIP)
+## KubeArmor
 
 [KubeArmor](https://kubearmor.io) provides LSM-based runtime security inside CoCo pods, restricting syscalls, file access, and network operations. POC complete; code review in progress.
 
 ---
 
-## SPIFFE/SPIRE (TBD)
+## SPIFFE/SPIRE
 
 Integration with [SPIFFE/SPIRE](https://spiffe.io) would enable attestation-based workload identity:
 - SPIRE issues SVIDs only after CoCo attestation succeeds

@@ -1,17 +1,13 @@
 # Building Blocks
 
-Before understanding Confidential Computing systems, you need to understand the foundational security primitives they're built on.
+This section will take you through some of the foundational security primitives of confidential computing.
 
 ## Root of Trust (RoT)
 
-> *"A Root of Trust is an essential, foundational security component that provides a set of trustworthy functions that the rest of the device or system can use to establish strong levels of security."*
-> — [Trusted Computing Group](https://trustedcomputinggroup.org/about/what-is-a-root-of-trust-rot/)
+**A Root of Trust** is an essential, foundational security component that provides a set of trustworthy functions that the rest of the device or system can use to establish strong levels of security.
 
-```{figure} ../images/page_13.png
-:alt: Root of Trust
-:align: center
-Root of Trust — the foundational hardware security anchor. Functions include trusted boot, measurement, secure storage, reporting, and verification. Examples: AMD PSP, TPM, vTPM, DICE.
-```
+*[Trusted Computing Group What is a Root of Trust?](https://trustedcomputinggroup.org/about/what-is-a-root-of-trust-rot/)*
+
 
 ### Functions a RoT Provides
 
@@ -23,15 +19,17 @@ Root of Trust — the foundational hardware security anchor. Functions include t
 | **Reporting** | Produces signed attestation reports |
 | **Verification** | Validates other components' integrity |
 
+Example RoTs - AMD Platform Security Processor, Trusted Platform Module (TPM), Virtual Trusted Platform Module (vTPM), Device Identifier Composition Engine (DICE)
+
 ---
 
 ## Trusted Platform Module (TPM) and vTPM
 
-```{figure} ../images/page_14.png
-:alt: TPM and vTPM
-:align: center
-A TPM (Trusted Platform Module) securely stores passwords, certificates, encryption keys, and platform measurements (PCRs). A vTPM is a software-based representation of a physical TPM 2.0 chip.
-```
+TPM (Trusted Platform Module) is a computer chip (microcontroller) that can securely store artifacts used to authenticate the platform (your PC or laptop). These artifacts can include passwords, certificates, or encryption keys. A TPM can also be used to store platform measurements that help ensure that the platform remains trustworthy.
+
+A Virtual Trusted Platform Module (vTPM) is a software-based representation of a physical Trusted Platform Module (TPM) 2.0 chip
+
+*[Trusted Computing Group TPM summary](https://trustedcomputinggroup.org/resource/trusted-platform-module-tpm-summary/)*
 
 ### TPM Platform Configuration Registers (PCRs)
 
@@ -57,13 +55,12 @@ A vTPM managed by a hypervisor means the hypervisor is in the Trusted Computing 
 
 ## Trusted Computing Base (TCB)
 
+The **Trusted Computing Base** is the set of all hardware, firmware, and software components that you *must trust* for your system's security to hold. In a traditional cloud VM, this includes the hypervisor and host OS — both controlled by the cloud provider.
+
 ```{figure} ../images/page_15.png
 :alt: Trusted Computing Base in a traditional VM
 :align: center
-In a traditional VM, the entire stack — hardware, firmware, host OS, hypervisor, guest firmware, guest kernel, and the application itself — must all be trusted. The cloud provider controls everything below the guest.
 ```
-
-The **Trusted Computing Base** is the set of all hardware, firmware, and software components that you *must trust* for your system's security to hold. In a traditional cloud VM, this includes the hypervisor and host OS — both controlled by the cloud provider.
 
 ---
 
@@ -71,97 +68,161 @@ The **Trusted Computing Base** is the set of all hardware, firmware, and softwar
 
 ### Secure Boot and Trusted Boot
 
+**Secure Boot** verifies digital signatures before running bootloaders.
+
+- It is a feature of the Unified Extensible Firmware Interface (UEFI). It's used to check bootloaders, key operating system files, and the ROM for any tampering attempts.
+- UEFI firmware has signatures stored in a database and Secure Boot will check those signatures. If the signatures don't match, then something was modified incorrectly and the boot process will halt.
+
+**Trusted Boot** extends this with a chain of verification — each stage checks the next before passing control.
+
+- The bootloader (which we've verified to be trustworthy) will check the digital signature of the operating system kernel before loading it.
+- The verified kernel will then verify every other part of the OS startup process including boot drivers and startup files, to make sure those components are all safe.
+
 ```{figure} ../images/page_16.png
 :alt: Secure Boot and Trusted Boot
 :align: center
-Secure Boot (UEFI) verifies digital signatures before running bootloaders. Trusted Boot extends this with a chain of verification — each stage checks the next before passing control.
 ```
 
-- **Secure Boot** — prevents unsigned or tampered bootloaders from running. The UEFI firmware maintains a database of trusted signing certificates.
-- **Trusted Boot** — creates a full chain: Firmware → verifies → Bootloader → verifies → Kernel → verifies → OS components.
-
 ### Measured Boot
+
+Measured boot uses hardware Root of Trust (RoT) eg. TPM to record a cryptographic hash of every stage of the boot process into PCRs. This creates a tamper-evident audit trail that can be verified remotely at any point in time.
+
+Measured Boot doesn't *block* anything — instead it **records** everything that runs (eg. into the TPM's PCRs). This enables **remote attestation** — a third party can cryptographically verify the exact software stack that booted.
+
 
 ```{figure} ../images/page_17.png
 :alt: Measured Boot
 :align: center
-Measured boot uses hardware Root of Trust (TPM) to record a cryptographic hash of every stage of the boot process into PCRs. This creates a tamper-evident audit trail that can be verified remotely at any point in time.
 ```
 
-Measured Boot doesn't *block* anything — instead it **records** everything that runs into the TPM's PCRs. This enables **remote attestation** — a third party can cryptographically verify the exact software stack that booted.
+### Summary Comparison
 
-### Comparison
+Comparison of boot security mechanisms: Secure Boot and Trusted Boot prevent unauthorized software from running; Measured Boot records what ran and enables remote verification via attestation.
 
 ```{figure} ../images/page_18.png
 :alt: Summary Comparison Table — Secure Boot vs Trusted Boot vs Measured Boot
 :align: center
-Comparison of boot security mechanisms: Secure Boot and Trusted Boot prevent unauthorized software from running; Measured Boot records what ran and enables remote verification via attestation.
 ```
 
-| Boot Type | Prevents Bad Software? | Records What Ran? | Provable to Remote Parties? |
+---
+
+## Trusted Execution Environments (TEEs)
+
+A **Trusted Execution Environment (TEE)** is a hardware-enforced, isolated region of a processor that protects code and data from unauthorized access — including from privileged software like the OS, hypervisor, or firmware.
+
+```{figure} ../images/page_22.png
+:alt: Trusted Execution Environments definition
+:align: center
+```
+
+| Characteristic | Description |
+|---|---|
+| **Memory Encryption** | All data in the TEE's memory is encrypted by the hardware. Even physical DRAM access reveals only ciphertext. |
+| **Isolation** | The TEE is isolated from other processes, VMs, and the host OS. Hardware enforces this boundary. |
+| **Remote Attestation** | The TEE can prove its identity and integrity to remote parties cryptographically. |
+| **Data Integrity** | The hardware detects and prevents tampering with TEE memory. |
+
+### Types of TEEs
+
+```{figure} ../images/page_23.png
+:alt: Types of TEEs — VM-based and Process-based
+:align: center
+```
+
+**VM-Based TEEs** encrypt memory along a traditional VM boundary. The hypervisor cannot read VM memory.
+
+Examples: AMD SEV-SNP, Intel TDX, IBM Secure Execution, IBM PEF
+
+- Protects entire existing applications without code changes
+- Supports standard Linux distributions
+- Scales to large memory and multi-core workloads
+
+**Process-Based TEEs** split an app into trusted and untrusted components. Only the sensitive part runs in encrypted memory.
+
+Example: Intel SGX
+
+- Smaller attack surface (only enclave code is in the TCB)
+- Requires application refactoring to separate trusted/untrusted components
+- Historically constrained to small enclave memory sizes
+
+### TCB Reduction with Confidential Computing
+
+Confidential Computing dramatically reduces the TCB. The hypervisor and host OS move out of the TCB — you no longer need to trust the cloud provider's software stack.
+
+```{figure} ../images/page_24.png
+:alt: TCB reduction with Confidential Computing
+:align: center
+```
+
+#### TCB for VM TEEs with vTPM
+
+```{figure} ../images/page_25.png
+:alt: TCB for VM TEEs with vTPM — two configurations
+:align: center
+```
+
+| Configuration | vTPM Location | Hypervisor in TCB? | Used By |
 |---|---|---|---|
-| Secure Boot | ✔ | ✗ | ✗ |
-| Trusted Boot | ✔ | ✗ | ✗ |
-| Measured Boot | ✗ | ✔ | ✔ (via attestation) |
+| vTPM outside TEE | Managed by hypervisor | ✔ Yes | AWS (SNP), GCP |
+| vTPM inside TEE (SVSM) | Inside the CVM | ✗ No | Azure CVMs, bare metal |
 
----
+#### TCB for VM TEEs without vTPM
 
-## The Trust Boundary Problem
+When no vTPM is used (direct boot model for SNP/TDX), the hypervisor is excluded from the TCB entirely. The hardware Root of Trust generates attestation reports directly.
 
-```{figure} ../images/page_19.png
-:alt: Trust Boundary in Virtualisation
+```{figure} ../images/page_26.png
+:alt: TCB for VM TEEs without vTPM
 :align: center
-In traditional virtualisation, the provider fully controls everything below the guest — including the ability to inspect guest memory, modify guest execution, and inject code via the hypervisor. The tenant must trust the provider.
 ```
 
-```{figure} ../images/page_20.png
-:alt: The Challenge with Secure and Trusted Boot
+#### TCB for AMD VM TEEs with SVSM
+
+**SVSM** (Secure VM Service Module) runs *inside* the TEE and provides hypervisor-like services (such as vTPM) without involving the hypervisor itself. This means even the cloud provider's hypervisor is excluded from the TCB.
+
+```{figure} ../images/page_27.png
+:alt: TCB for AMD VM TEEs with SVSM
 :align: center
-Secure Boot does not protect tenants from the provider — the provider signs and defines all trusted components. The hypervisor can technically map guest memory, read plaintext pages, modify registers, and change guest files.
 ```
 
-```{admonition} The Fundamental Challenge
-:class: warning
+### AMD SEV-SNP Measured Boot
 
-Secure Boot and Trusted Boot do **not** protect the tenant from the cloud provider.
-The provider signs and defines all trusted components (Firmware, Bootloader, Host OS, Hypervisor).
-
-The tenant must ultimately "trust the provider" — the hypervisor can map guest memory,
-read plaintext pages, modify registers, and alter guest files.
-```
-
----
-
-## Enter Confidential Computing
-
-```{figure} ../images/page_21.png
-:alt: Enter Confidential Computing
-:align: center
-Confidential Computing introduces hardware-enforced TEE boundaries that reduce the TCB and encrypt VM memory. The provider can no longer inspect guest memory. Measured boot combined with remote attestation allows tenants to verify the boot measurements independently.
-```
-
----
-
-## AMD SEV-SNP Measured Boot Flow
+QEMU injects hashes of kernel, cmdline, and initramfs into guest memory. The AMD Secure Processor measures all guest memory. OVMF verifies hashes before booting. Measurements are in the VCEK-signed attestation report. No TPM is required.
 
 ```{figure} ../images/page_28.png
-:alt: Measured boot with AMD VM TEEs (SEV-SNP)
+:alt: Measured boot with AMD SEV-SNP
 :align: center
-AMD SEV-SNP measured boot: QEMU loads OVMF and injects hashes of the kernel, cmdline, and initramfs. The AMD Secure Processor measures all guest memory. OVMF continues boot only if hashes match. The attestation report (VCEK-signed) contains these measurements for remote verification. No TPM is required.
 ```
 
-## Intel TDX Measured Boot Flow
+### Intel TDX Measured Boot
+
+OVMF extends RTMRs (Runtime Extendable Measurement Registers) with kernel, cmdline, and initramfs measurements during boot.
+Measurements are available in the event log for remote attestation via TD Quote. No TPM required.
 
 ```{figure} ../images/page_29.png
-:alt: Measured boot with Intel VM TEEs (TDX)
+:alt: Measured boot with Intel TDX
 :align: center
-Intel TDX measured boot: QEMU loads OVMF which extends RTMRs (Runtime Extendable Measurement Registers) with kernel, cmdline, and initramfs hashes. Measurements are available via event log for remote attestation. No TPM required.
 ```
 
-## TPM vs. No-TPM Summary
+### Summary - TPM vs. No-TPM Attestation
 
 ```{figure} ../images/page_30.png
-:alt: Summary comparison — TPM vs without TPM
+:alt: Summary — TPM vs without TPM
 :align: center
-Summary: with TPM, measurements go into PCRs and evidence is a PCR Quote + event log. Without TPM (SNP/TDX direct boot), measurements are stored in specific memory locations or RTMRs and evidence is the attestation report itself.
 ```
+
+| | With TPM | Without TPM (SNP/TDX direct boot) |
+|---|---|---|
+| **Measurements** | PCRs | Specific memory locations (SNP) / RTMRs (TDX) |
+| **Evidence** | PCR Quote + event log | Attestation report / event log |
+| **Secret unsealing** | PCR authorization in hardware | External authorization + policy |
+
+### Summary Comparison of Major TEE Technologies
+
+| Feature | AMD SEV-SNP | Intel TDX | Intel SGX |
+|---|---|---|---|
+| **Type** | VM-based | VM-based | Process-based |
+| **Granularity** | Full VM | Full VM (Trust Domain) | Enclave (subset of process) |
+| **App changes needed** | None | None | Yes (trust/untrust split) |
+| **Hypervisor in TCB** | Optional | Optional | N/A |
+| **Available on cloud** | AWS, GCP, Azure | Azure, GCP | AWS (Nitro Enclaves) |
+| **Attestation key** | VCEK (per chip+firmware) | IAK (Intel managed) | Intel SGX quote |
