@@ -36,11 +36,13 @@ project:
       file: chapters/08_kata_containers.md
     - title: Confidential Containers (CoCo)
       file: chapters/09_confidential_containers.md
+    - title: Trustee
+      file: chapters/10_trustee.md
     - title: Operational Aspects
-      file: chapters/10_operational_aspects.md
+      file: chapters/11_operational_aspects.md
     - title: Integrations & Ecosystem
-      file: chapters/11_integrations.md
+      file: chapters/12_integrations.md
     - title: Market Landscape
-      file: chapters/12_market_landscape.md
+      file: chapters/13_market_landscape.md
 site:
   template: book-theme
