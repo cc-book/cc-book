@@ -38,8 +38,6 @@ project:
       file: chapters/10_trustee.md
     - title: Operational Aspects
       file: chapters/11_operational_aspects.md
-    - title: Integrations & Ecosystem
-      file: chapters/12_integrations.md
     - title: References
       file: chapters/13_references.md
 site:
