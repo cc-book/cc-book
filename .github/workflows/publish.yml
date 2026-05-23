@@ -23,6 +23,8 @@ jobs:
         run: uv sync
 
       - name: Build book
+        env:
+          BASE_URL: /cc-book
         run: make build
 
       - uses: actions/upload-pages-artifact@v3
