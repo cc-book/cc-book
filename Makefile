@@ -20,10 +20,10 @@ install:
 	uv sync
 
 build:
-	cd $(BOOK_DIR) && jupyter-book build
+	cd $(BOOK_DIR) && uv run jupyter-book build
 
 serve:
-	cd $(BOOK_DIR) && jupyter-book start --port $(PORT)
+	cd $(BOOK_DIR) && uv run jupyter-book start --port $(PORT)
 
 clean:
 	rm -rf $(BUILD_DIR)
