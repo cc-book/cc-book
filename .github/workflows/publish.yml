@@ -23,13 +23,11 @@ jobs:
         run: uv sync
 
       - name: Build book
-        env:
-          BASE_URL: /cc-book
         run: make build
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: book/_build/site/
+          path: book/_build/html/
 
       - uses: actions/deploy-pages@v4
         id: deployment

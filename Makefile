@@ -1,5 +1,6 @@
 BOOK_DIR  := book
 BUILD_DIR := $(BOOK_DIR)/_build
+HTML_DIR  := $(BUILD_DIR)/html
 PORT      := 3000
 
 .DEFAULT_GOAL := help
@@ -20,7 +21,7 @@ install:
 	uv sync
 
 build:
-	cd $(BOOK_DIR) && uv run jupyter-book build
+	cd $(BOOK_DIR) && uv run jupyter-book build --html
 
 serve:
 	cd $(BOOK_DIR) && uv run jupyter-book start --port $(PORT)
