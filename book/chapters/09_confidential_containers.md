@@ -68,11 +68,6 @@ The untrusted components include the host OS, KVM hypervisor, cloud provider sof
 
 Application code vulnerabilities, availability attacks, and software TEEs are out of scope.
 
-```{figure} ../images/page_61.png
-:alt: CoCo Threat Model — protect the workload from the host
-:align: center
-```
-
 ---
 
 ## Integrity Protection for CoCo CVM Images
