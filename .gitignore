@@ -11,3 +11,4 @@ wheels/
 
 # MyST build outputs
 _build
+book/_build
