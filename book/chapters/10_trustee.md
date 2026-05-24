@@ -20,7 +20,7 @@ There are also few other helper components inside the TEE:
 
 ## Architecture
 
-The CVM's Attestation Agent sends attestation evidence to the KBS. The KBS forwards it to the AS for verification against the RVPS. Upon a positive result, the KBS releases the requested resource (e.g., a decryption key) from the KMS backend.
+The CVM's Attestation Agent (AA) sends attestation evidence to the KBS. The KBS forwards it to the AS for verification against the RVPS. Upon a positive result, the KBS releases the requested resource (e.g., a decryption key) from the KMS backend.
 
 ```{figure} ../images/page_65.png
 :alt: Trustee Architecture
@@ -29,7 +29,7 @@ The CVM's Attestation Agent sends attestation evidence to the KBS. The KBS forwa
 
 ## End-to-End Flow
 
-A CVM attests to request a resource. The KBS appraises the attestation result (EAR/AR4SI) before releasing a key or secret. Trustee can also delegate verification to external services (Intel Trust Authority, NVIDIA NRAS, etc.) and integrate with KMS, Vault, HSM, or Kubernetes Secrets as key backends.
+A CVM attests to request a resource. The KBS appraises the attestation result before releasing a key or secret. Trustee can also delegate verification to external services (Intel Trust Authority, NVIDIA NRAS, etc.) and integrate with KMS, Vault, HSM, or Kubernetes Secrets as key backends.
 
 ```{figure} ../images/page_66.png
 :alt: Trustee Architecture — end to end example
@@ -40,7 +40,7 @@ A CVM attests to request a resource. The KBS appraises the attestation result (E
 
 ## CoCo Attestation
 
-CoCo performs **lazy attestation** — the Attestation Agent inside the CVM does not attest at pod startup. Attestation is triggered on-demand when the workload first requests a secret from the KBS.
+CoCo performs **lazy attestation** — Attestation is triggered on-demand. For example during pod creation to retrieve container image signature policy and key, or image decryption key. It could also be triggered post pod creation when the workload requests a secret.
 
 Two attestation models are supported:
 

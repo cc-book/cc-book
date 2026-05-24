@@ -19,7 +19,7 @@ This section will take you through some of the foundational elements of confiden
 | **Reporting** | Produces signed attestation reports |
 | **Verification** | Validates other components' integrity |
 
-Example RoTs - AMD Platform Security Processor, Trusted Platform Module (TPM), Virtual Trusted Platform Module (vTPM), Device Identifier Composition Engine (DICE)
+Example RoTs - AMD Secure Processor, Trusted Platform Module (TPM), Virtual Trusted Platform Module (vTPM), Device Identifier Composition Engine (DICE)
 
 ---
 
@@ -163,8 +163,8 @@ Confidential Computing dramatically reduces the TCB. The hypervisor and host OS 
 
 | Configuration | vTPM Location | Hypervisor in TCB? | Used By |
 |---|---|---|---|
-| vTPM outside TEE | Managed by hypervisor | ✔ Yes | AWS (SNP), GCP |
-| vTPM inside TEE (SVSM) | Inside the CVM | ✗ No | Azure CVMs, bare metal |
+| vTPM outside TEE | Managed by hypervisor | ✔ Yes | AWS, GCP |
+| vTPM inside TEE | Inside the CVM | ✗ No | Azure CVMs, bare metal (with SVSM) |
 
 #### TCB for VM TEEs without vTPM
 
@@ -186,7 +186,15 @@ When no vTPM is used (direct boot model for SNP/TDX), the hypervisor is excluded
 
 ### AMD SEV-SNP Measured Boot
 
-QEMU injects hashes of kernel, cmdline, and initramfs into guest memory. The AMD Secure Processor measures all guest memory. OVMF verifies hashes before booting. Measurements are in the VCEK-signed attestation report. No TPM is required.
+Here is an example measured boot flow with an SNP VM TEE in a KVM/Qemu environment. Note that TPM is not used. Instead, the hashes of the kernel, kernel command line and initramfs are stored in the guest memory and measured by the AMD Secure Processor (SP).
+
+1. Qemu started with -kernel param (direct boot)
+2. Qemu loads OVMF into guest memory
+3. Qemu loads hashes of kernel, kernel command line and initramfs into guest memory
+4. AMD Secure Processor (SP) measures all the guest memory
+5. Once the OVMF is loaded, it will load the kernel and initramfs into memory, but it will continue the boot process only if the hashes of the kernel, kernel command line and initramfs match the hashes stored in OVMF.
+
+The measurements are available any time as part of the attestation report and can be used for remote attestation and the attestation report is signed with the Versioned Chip Endorsement Key (VCEK).
 
 ```{figure} ../images/page_28.png
 :alt: Measured boot with AMD SEV-SNP
@@ -195,8 +203,14 @@ QEMU injects hashes of kernel, cmdline, and initramfs into guest memory. The AMD
 
 ### Intel TDX Measured Boot
 
-OVMF extends RTMRs (Runtime Extendable Measurement Registers) with kernel, cmdline, and initramfs measurements during boot.
-Measurements are available in the event log for remote attestation via TD Quote. No TPM required.
+Here is an example measured boot flow with a TDX VM TEE in a KVM/Qemu environment. Note that TPM is not used.
+
+1. Qemu started with -kernel param (direct boot)
+2. Qemu loads OVMF into guest memory
+3. OVMF loads kernel and initramfs into memory and measures the kernel, kernel command line and initramfs into Runtime Extendable measurement register (RTMR).
+
+The measurements are available any time (in the event log) can can be used as evidence for remote attestation.
+
 
 ```{figure} ../images/page_29.png
 :alt: Measured boot with Intel TDX

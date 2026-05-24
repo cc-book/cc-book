@@ -68,18 +68,6 @@ Here is the flow of a passport check model:
 
 ---
 
-## What's in an Attestation Report?
-
-| Field | Description | Purpose |
-|---|---|---|
-| **Measurement** | Hash of initial guest memory (firmware + kernel + initramfs) | Verify the right software is running |
-| **Platform info** | CPU model, firmware version, security patch level | Verify the hardware is up to date |
-| **Policy** | Required security features (e.g., debug mode disabled) | Ensure security properties are enforced |
-| **Nonce/User Data** | Random value provided by the challenger | Prevent replay attacks |
-| **Signature** | Signed by chip-unique key | Prove the report comes from real hardware |
-
----
-
 ## Verification Services
 
 | Service | Provider | Supports |

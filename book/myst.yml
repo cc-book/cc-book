@@ -36,8 +36,6 @@ project:
       file: chapters/09_confidential_containers.md
     - title: Trustee
       file: chapters/10_trustee.md
-    - title: Operational Aspects
-      file: chapters/11_operational_aspects.md
     - title: References
       file: chapters/13_references.md
 site:

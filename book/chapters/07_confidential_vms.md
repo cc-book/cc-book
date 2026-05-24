@@ -121,7 +121,7 @@ A **virtual TPM backed by hardware** (rather than managed by the hypervisor) ena
 - **Attestable genuineness** — under SEV-SNP or TDX, a vTPM inside the TEE cannot be faked by the host
 - **PCR-based policies** — the same policy model used for bare-metal TPMs works inside the CVM
 
-When the vTPM is placed **inside the TEE** (via SVSM on AMD SEV-SNP, or natively on Azure CVMs), the hypervisor is completely excluded from the trust chain.
+When the vTPM is placed **inside the TEE** (via SVSM on AMD SEV-SNP, or natively on [Azure CVMs](https://learn.microsoft.com/en-us/azure/confidential-computing/virtual-tpms-in-azure-confidential-vm)), the hypervisor is completely excluded from the trust chain.
 
 ---
 
