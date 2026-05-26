@@ -4,11 +4,9 @@
 
 Confidential Containers — a generic term for containers deployed inside Trusted Execution Environments (TEEs).
 
-> *"The CNCF CoCo project aims to enable users to run containers inside TEEs on any Kubernetes cluster, with minimal changes to their existing applications and workflows."*
-
 ## CNCF Confidential Containers (CoCo) Project
 
-The CNCF CoCo project provides a common foundation for deploying containers inside VM (using [Kata Containers](https://katacontainers.io/)) on any Kubernetes cluster, and includes Trustee as the remote attestation service.
+The CNCF CoCo project provides a common foundation for deploying a pod inside a CVM (using [Kata Containers](https://katacontainers.io/)) on any Kubernetes cluster, and includes Trustee as the remote attestation service.
 
 ```{figure} ../images/page_57.png
 :alt: CNCF Confidential Containers Project overview
@@ -30,10 +28,9 @@ CoCo **protects the workload from the host**.
 
 | | Kata Containers | CoCo |
 |---|---|---|
-| **Threat model** | Host ← Workload | Host → Workload |
-| **Who's protected** | Infrastructure | The application |
-| **Image download** | On worker node | Inside the CVM |
-| **Secrets via** | K8s Secrets (etcd) | Sealed Secrets (attestation) |
+| **Threat model** | Protect host from the workload | Protect workload from the host |
+| **Who's protected** | Cluster infra | The workload |
+| **Image download** | May be on the worker node or inside the VM | Always inside the CVM |
 | **TEE required** | No | Yes |
 | **Attestation** | No | Yes |
 
@@ -41,7 +38,7 @@ CoCo **protects the workload from the host**.
 
 ## Architecture: CoCo/bare-metal (Local Hypervisor)
 
-The Confidential VM (CVM) runs on the worker node inside the TEE hardware. Inside the CVM: kata-agent manages containers, image-rs downloads encrypted images, the Confidential Data Hub (CDH) serves as the secret retrieval proxy, and the Attestation Agent (AA) produces hardware-backed evidence. Container images are always downloaded inside the CVM, never on the host.
+The Confidential VM (CVM) runs on the worker node. Inside the CVM: kata-agent manages the lifecycle of the pod (containers), image-rs (part of kata-agent) downloads the container images, the Confidential Data Hub (CDH) serves as the secret retrieval proxy, and the Attestation Agent (AA) handles the attestation process. Container images are always downloaded inside the CVM, never on the host.
 
 ```{figure} ../images/page_59.png
 :alt: High Level Architecture — CoCo/bare-metal
@@ -52,7 +49,7 @@ The Confidential VM (CVM) runs on the worker node inside the TEE hardware. Insid
 
 ## Architecture: CoCo/peer-pods (Remote Hypervisor)
 
-The Confidential VM runs external to the worker node. The worker node hosts only the kata-runtime and cloud-api-adaptor. The CVM handles all TEE operations, attestation, and encrypted image downloads.
+The Confidential VM runs external to the worker node. The worker node hosts only the kata-runtime and cloud-api-adaptor.
 
 ```{figure} ../images/page_60.png
 :alt: High Level Architecture — CoCo/peer-pods
@@ -64,9 +61,9 @@ The Confidential VM runs external to the worker node. The worker node hosts only
 
 ## CoCo Threat Model
 
-The untrusted components include the host OS, KVM hypervisor, cloud provider software, other VMs on the same host, other processes on the host machine, and the Kubernetes control plane (kubelet, etcd, API server).
+The untrusted components include the host OS, hypervisor, cloud provider software, other VMs on the same host, other processes on the worker node, and the Kubernetes control plane (kubelet, etcd, API server).
 
-Application code vulnerabilities, availability attacks, and software TEEs are out of scope.
+Application code vulnerabilities, availability attacks, and physical attacks are out of scope.
 
 ---
 
