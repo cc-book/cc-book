@@ -1,6 +1,6 @@
 # Confidential Computing Deep Dive
 Author: Pradipta Banerjee, Project Maintainer — Confidential Containers
-Source: https://confidential-devhub.github.io/cc-book/
+Source: https://cc-book.github.io/cc-book/
 
 ---
 

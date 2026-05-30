@@ -6,18 +6,18 @@
 
 ## Chapters
 
-- [Introduction](https://confidential-devhub.github.io/cc-book/chapters/intro.md): This book is a comprehensive deep dive into Confidential Computing. It covers the theory, architecture, components, and use cases to understand and work with confidential computing.
-- [What is Confidential Computing?](https://confidential-devhub.github.io/cc-book/chapters/overview.md): Modern data security is often described using three pillars:
-- [Use Cases](https://confidential-devhub.github.io/cc-book/chapters/use-cases.md): Here are the primary use cases of confidential computing.
-- [Building Blocks](https://confidential-devhub.github.io/cc-book/chapters/building-blocks.md): This section will take you through some of the foundational elements of confidential computing.
-- [Remote Attestation](https://confidential-devhub.github.io/cc-book/chapters/remote-attestation.md): Remote attestation is the mechanism by which a TEE proves to a remote party that it is genuine, unmodified, and running the expected software. Without attestation, Confidential Computing would just be
-- [The Trust Boundary Problem](https://confidential-devhub.github.io/cc-book/chapters/trust-boundary.md): With the building blocks in place — Root of Trust, measured boot, and TEEs — we can now ask the critical question: do they actually protect tenants from the infrastructure they run on?
-- [Three Pillars of Confidential Computing](https://confidential-devhub.github.io/cc-book/chapters/three-pillars.md): Confidential Computing in cloud-native environments is organized into three deployment tiers, each building on the previous one.
-- [Confidential Virtual Machine (CVM)](https://confidential-devhub.github.io/cc-book/chapters/confidential-vms.md): A Confidential Virtual Machine (CVM) is a virtual machine that runs inside a hardware Trusted Execution Environment (TEE), protecting the guest's memory and execution from inspection or tampering by t
-- [Confidential Containers (CoCo)](https://confidential-devhub.github.io/cc-book/chapters/confidential-containers.md): Confidential Containers — a generic term for containers deployed inside Trusted Execution Environments (TEEs).
-- [Trustee](https://confidential-devhub.github.io/cc-book/chapters/trustee.md): [Trustee](https://github.com/confidential-containers/trustee) is the remote attestation and secret brokering infrastructure for CNCF Confidential Containers.
-- [References](https://confidential-devhub.github.io/cc-book/chapters/references.md): For a comprehensive list of Confidential Computing resources, tools, papers, and projects:
+- [Introduction](https://cc-book.github.io/cc-book/chapters/intro.md): This book is a comprehensive deep dive into Confidential Computing. It covers the theory, architecture, components, and use cases to understand and work with confidential computing.
+- [What is Confidential Computing?](https://cc-book.github.io/cc-book/chapters/overview.md): Modern data security is often described using three pillars:
+- [Use Cases](https://cc-book.github.io/cc-book/chapters/use-cases.md): Here are the primary use cases of confidential computing.
+- [Building Blocks](https://cc-book.github.io/cc-book/chapters/building-blocks.md): This section will take you through some of the foundational elements of confidential computing.
+- [Remote Attestation](https://cc-book.github.io/cc-book/chapters/remote-attestation.md): Remote attestation is the mechanism by which a TEE proves to a remote party that it is genuine, unmodified, and running the expected software. Without attestation, Confidential Computing would just be
+- [The Trust Boundary Problem](https://cc-book.github.io/cc-book/chapters/trust-boundary.md): With the building blocks in place — Root of Trust, measured boot, and TEEs — we can now ask the critical question: do they actually protect tenants from the infrastructure they run on?
+- [Three Pillars of Confidential Computing](https://cc-book.github.io/cc-book/chapters/three-pillars.md): Confidential Computing in cloud-native environments is organized into three deployment tiers, each building on the previous one.
+- [Confidential Virtual Machine (CVM)](https://cc-book.github.io/cc-book/chapters/confidential-vms.md): A Confidential Virtual Machine (CVM) is a virtual machine that runs inside a hardware Trusted Execution Environment (TEE), protecting the guest's memory and execution from inspection or tampering by t
+- [Confidential Containers (CoCo)](https://cc-book.github.io/cc-book/chapters/confidential-containers.md): Confidential Containers — a generic term for containers deployed inside Trusted Execution Environments (TEEs).
+- [Trustee](https://cc-book.github.io/cc-book/chapters/trustee.md): [Trustee](https://github.com/confidential-containers/trustee) is the remote attestation and secret brokering infrastructure for CNCF Confidential Containers.
+- [References](https://cc-book.github.io/cc-book/chapters/references.md): For a comprehensive list of Confidential Computing resources, tools, papers, and projects:
 
 ## Full book (single file)
 
-- [llms-full.txt](https://confidential-devhub.github.io/cc-book/llms-full.txt): All chapters concatenated into one document.
+- [llms-full.txt](https://cc-book.github.io/cc-book/llms-full.txt): All chapters concatenated into one document.

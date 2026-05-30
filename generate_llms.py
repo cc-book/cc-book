@@ -7,7 +7,7 @@ BOOK_DIR = Path("book")
 PUBLIC_DIR = BOOK_DIR / "public"
 CHAPTERS_DIR = BOOK_DIR / "chapters"
 
-SITE_URL = "https://confidential-devhub.github.io/cc-book"
+SITE_URL = "https://cc-book.github.io/cc-book"
 
 # TOC in reading order — matches myst.yml
 TOC = [
@@ -80,7 +80,7 @@ def build_llms_full_txt() -> str:
     parts = [
         "# Confidential Computing Deep Dive",
         "Author: Pradipta Banerjee, Project Maintainer — Confidential Containers",
-        "Source: https://confidential-devhub.github.io/cc-book/",
+        "Source: https://cc-book.github.io/cc-book/",
         "",
         "---",
         "",
