@@ -1110,7 +1110,7 @@ For container image layers and ephemeral writes, a **LUKS-encrypted disk** uses 
 
 # Trustee
 
-[Trustee](https://github.com/confidential-containers/trustee) is the remote attestation and secret brokering infrastructure for CNCF Confidential Containers.
+[Trustee](https://github.com/confidential-containers/trustee) is the remote attestation solution for confidential containers and confidential VMs.
 
 Trustee implements the **Relying Party** and **Verifier** roles from the IETF RATS architecture, and consists of three sub-components:
 
@@ -1120,11 +1120,13 @@ Trustee implements the **Relying Party** and **Verifier** roles from the IETF RA
 | **Attestation Service (AS)** | Verifier | Verifies TEE evidence against reference values |
 | **Reference Value Provider (RVPS)** | Reference Value Provider | Supplies golden measurements for comparison |
 
-[Guest-components](https://github.com/confidential-containers/guest-components) is the repository for the **Attester** role, which is implemented by the **Attestation Agent** running inside the TEE (CVM). The AA is responsible for sending the evidence (claims) from the TEE to prove the trustworthiness of the environment.
+[Guest-components](https://github.com/confidential-containers/guest-components) is the repository implementing the **Attester** role from the IETF RATS architecture and consists of the **Attestation Agent (AA)** component. The AA (`attestation-agent`) runs inside the TEE (CVM) and is responsible for sending the evidence (claims) from the TEE to prove the trustworthiness of the environment.
 
 There are also few other helper components inside the TEE:
 
-- Confidential Data Hub (CDH): The CDH facilitates secure key retrieval for kata-agent and applications. It also provides additional services, such as secure mount for external storage or key management client services to retrieve keys directly from external Key Management Services. The secure mount service enables mounting of encrypted storage inside the TEE. The CDH APIs are exposed to the applications via a local API Server.
+- Confidential Data Hub (CDH): The CDH (`confidential-data-hub`) facilitates secure key retrieval for kata-agent and applications. It also provides additional services, such as secure mount for external storage or key management client services to retrieve keys directly from external Key Management Services. The secure mount service enables mounting of encrypted storage inside the TEE. The CDH APIs are exposed to the applications via a local API Server.
+- API Server: The API Server (`api-server-rest`) is a local API server that exposes the CDH APIs to the applications.
+- Container image library: The container image library (`image-rs`) provides the functionality to handle container image lifecycle inside the TEE (CVM).
 
 ---
 
