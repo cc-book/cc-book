@@ -20,7 +20,8 @@ TOC = [
     ("three-pillars",      CHAPTERS_DIR / "06_three_pillars.md",        "Three Pillars of Confidential Computing"),
     ("confidential-vms",   CHAPTERS_DIR / "07_confidential_vms.md",     "Confidential Virtual Machine (CVM)"),
     ("confidential-containers", CHAPTERS_DIR / "09_confidential_containers.md", "Confidential Containers (CoCo)"),
-    ("trustee",            CHAPTERS_DIR / "10_trustee.md",              "Trustee"),
+    ("confidential-clusters", CHAPTERS_DIR / "10_confidential_clusters.md", "Confidential Cluster"),
+    ("trustee",            CHAPTERS_DIR / "11_trustee.md",              "Trustee"),
     ("references",         CHAPTERS_DIR / "13_references.md",           "References"),
 ]
 

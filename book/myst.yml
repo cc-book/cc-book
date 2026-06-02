@@ -34,8 +34,10 @@ project:
       file: chapters/07_confidential_vms.md
     - title: Confidential Containers (CoCo)
       file: chapters/09_confidential_containers.md
+    - title: Confidential Cluster
+      file: chapters/10_confidential_clusters.md
     - title: Trustee
-      file: chapters/10_trustee.md
+      file: chapters/11_trustee.md
     - title: References
       file: chapters/13_references.md
 site:

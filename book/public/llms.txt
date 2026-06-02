@@ -15,6 +15,7 @@
 - [Three Pillars of Confidential Computing](https://cc-book.github.io/cc-book/chapters/three-pillars.md): Confidential Computing in cloud-native environments is organized into three deployment tiers, each building on the previous one.
 - [Confidential Virtual Machine (CVM)](https://cc-book.github.io/cc-book/chapters/confidential-vms.md): A Confidential Virtual Machine (CVM) is a virtual machine that runs inside a hardware Trusted Execution Environment (TEE), protecting the guest's memory and execution from inspection or tampering by t
 - [Confidential Containers (CoCo)](https://cc-book.github.io/cc-book/chapters/confidential-containers.md): Confidential Containers — a generic term for containers deployed inside Trusted Execution Environments (TEEs).
+- [Confidential Cluster](https://cc-book.github.io/cc-book/chapters/confidential-clusters.md): A Confidential Cluster is a Kubernetes cluster with Confidential Virtual Machines (CVMs) as Kubernetes nodes. Every node is a CVM, so the cloud provider and infrastructure administrator cannot inspect
 - [Trustee](https://cc-book.github.io/cc-book/chapters/trustee.md): [Trustee](https://github.com/confidential-containers/trustee) is the remote attestation solution for confidential containers and confidential VMs.
 - [References](https://cc-book.github.io/cc-book/chapters/references.md): For a comprehensive list of Confidential Computing resources, tools, papers, and projects:
 
