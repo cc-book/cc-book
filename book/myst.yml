@@ -38,6 +38,8 @@ project:
       file: chapters/10_confidential_clusters.md
     - title: Trustee
       file: chapters/11_trustee.md
+    - title: Hands-On Labs
+      file: chapters/12_labs.md
     - title: References
       file: chapters/13_references.md
 site:
