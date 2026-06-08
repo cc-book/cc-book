@@ -3,6 +3,7 @@ version: 1
 project:
   title: Confidential Computing Deep Dive
   description: A comprehensive guide to Confidential Computing, TEEs, and CNCF Confidential Containers.
+  github: https://github.com/cc-book/cc-book
   authors:
     - name: Pradipta Banerjee
       affiliations:
