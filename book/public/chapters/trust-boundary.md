@@ -1,6 +1,6 @@
 # The Trust Boundary Problem
 
-With the building blocks in place — Root of Trust, measured boot, and TEEs — we can now ask the critical question: **do they actually protect tenants from the infrastructure they run on?**
+Cloud computing promises flexibility and scale. But it comes at a cost: when you run workloads on someone else's infrastructure, you must trust the infrastructure owner. Let's examine what that trust actually means — and why it is a deeper problem than it first appears.
 
 ---
 
@@ -160,12 +160,12 @@ This is what **Confidential Computing** provides: a hardware-enforced boundary t
 
 Confidential Computing introduces **hardware-enforced TEE boundaries** where:
 
-- VM memory is encrypted by the CPU — the hypervisor sees only ciphertext
-- The TCB is reduced — the hypervisor and host OS are no longer trusted components
-- Measured boot is rooted in hardware (AMD SP, Intel TDX Module) — not in provider-controlled firmware
-- **Remote attestation** lets the tenant independently verify the boot measurements, without relying on the provider
+- VM memory is encrypted by the CPU — the hypervisor sees only ciphertext, not plaintext data
+- The Trusted Computing Base (TCB) is reduced — the hypervisor and host OS are no longer trusted components
+- Boot measurements are rooted in hardware — not in provider-controlled firmware
+- Tenants can independently verify the integrity of their environment before trusting it with secrets
 
-The tenant trust boundary now extends *down to the hardware*, bypassing the hypervisor entirely.
+The tenant trust boundary now extends *down to the hardware*, bypassing the hypervisor entirely. The following chapters explain the mechanisms that make this possible.
 
 ---
 

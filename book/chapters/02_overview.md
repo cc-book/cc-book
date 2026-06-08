@@ -54,7 +54,11 @@ Three key phrases in this definition:
 
 Confidential Computing solves the problem of securing remote computation — executing software on a remote computer owned by an untrusted party, with integrity and confidentiality guarantees.
 
-This is the fundamental promise: **you can run code on someone else's machine and still prove that your data wasn't seen by the machine's owner.**
+This shifts the trust requirement: instead of trusting the infrastructure operator's policies and personnel, you trust the hardware itself. **A cloud provider's software stack — including privileged administrators — cannot access your data in use, and you can verify this cryptographically.**
+
+:::{note}
+This guarantee applies to *software-layer* attackers. CC's threat model still assumes physical infrastructure security — attacks requiring physical hardware access (such as memory bus interposition) are out of scope. These limits are covered in the Trust Boundary chapter.
+:::
 
 ```{figure} ../images/page_05.png
 :alt: What problem does Confidential Computing solve

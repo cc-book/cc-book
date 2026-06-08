@@ -12,11 +12,11 @@ SITE_URL = "https://cc-book.github.io/cc-book"
 # TOC in reading order — matches myst.yml
 TOC = [
     ("intro",              BOOK_DIR / "intro.md",                       "Introduction"),
-    ("overview",           CHAPTERS_DIR / "01_overview.md",             "What is Confidential Computing?"),
-    ("use-cases",          CHAPTERS_DIR / "02_use_cases.md",            "Use Cases"),
-    ("building-blocks",    CHAPTERS_DIR / "03_building_blocks.md",      "Building Blocks"),
+    ("trust-boundary",     CHAPTERS_DIR / "01_trust_boundary.md",       "The Trust Boundary Problem"),
+    ("overview",           CHAPTERS_DIR / "02_overview.md",             "What is Confidential Computing?"),
+    ("use-cases",          CHAPTERS_DIR / "03_use_cases.md",            "Use Cases"),
+    ("building-blocks",    CHAPTERS_DIR / "04_building_blocks.md",      "Building Blocks"),
     ("remote-attestation", CHAPTERS_DIR / "05_remote_attestation.md",   "Remote Attestation"),
-    ("trust-boundary",     CHAPTERS_DIR / "04_trust_boundary.md",       "The Trust Boundary Problem"),
     ("three-pillars",      CHAPTERS_DIR / "06_three_pillars.md",        "Three Pillars of Confidential Computing"),
     ("confidential-vms",   CHAPTERS_DIR / "07_confidential_vms.md",     "Confidential Virtual Machine (CVM)"),
     ("confidential-containers", CHAPTERS_DIR / "09_confidential_containers.md", "Confidential Containers (CoCo)"),
