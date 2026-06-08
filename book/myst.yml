@@ -30,12 +30,13 @@ project:
       file: chapters/05_remote_attestation.md
     - title: Three Pillars of Confidential Computing
       file: chapters/06_three_pillars.md
-    - title: Confidential Virtual Machine (CVM)
-      file: chapters/07_confidential_vms.md
-    - title: Confidential Containers (CoCo)
-      file: chapters/09_confidential_containers.md
-    - title: Confidential Cluster
-      file: chapters/10_confidential_clusters.md
+      children:
+        - title: Confidential Virtual Machine (CVM)
+          file: chapters/07_confidential_vms.md
+        - title: Confidential Containers (CoCo)
+          file: chapters/09_confidential_containers.md
+        - title: Confidential Cluster
+          file: chapters/10_confidential_clusters.md
     - title: Trustee
       file: chapters/11_trustee.md
     - title: Hands-On Labs
