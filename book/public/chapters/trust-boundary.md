@@ -1,6 +1,6 @@
 # The Trust Boundary Problem
 
-Cloud computing promises flexibility and scale. But it comes at a cost: when you run workloads on someone else's infrastructure, you must trust the infrastructure owner. Let's examine what that trust actually means — and why it is a deeper problem than it first appears.
+Cloud computing promises flexibility and scale. But it comes at a cost: when you run workloads on someone else's infrastructure, you must trust the infrastructure owner. Let's examine what that trust actually means, and why it is a deeper problem than it first appears.
 
 ---
 
@@ -47,7 +47,7 @@ All software-based security controls can be bypassed by a sufficiently privilege
 
 ## Real-World Attack Scenarios
 
-Each attach scenario represents a class of attack that a privileged infrastructure operator (or a compromised one) can carry out:
+Each attack scenario represents a class of attack that a privileged infrastructure operator (or a compromised one) can carry out:
 
 ### 1. Live Memory Dump
 
@@ -58,7 +58,7 @@ A hypervisor administrator uses QEMU/KVM or cloud management APIs to pause a VM 
 - Active TLS private keys
 - User session tokens and credentials
 
-This requires no vulnerability in the guest OS — it is a built-in capability of every hypervisor.
+This requires no vulnerability in the guest OS. It is a built-in capability of every hypervisor.
 
 ### 2. Cold-Boot Attack
 
@@ -66,7 +66,7 @@ Physical access to a server allows an attacker to freeze DRAM chips (preserving 
 
 ### 3. Hypervisor-Level Keylogger
 
-By intercepting virtual keyboard I/O at the hypervisor layer, an attacker captures keystrokes before they reach the guest OS — including passwords, PINs, and passphrases entered by users.
+By intercepting virtual keyboard I/O at the hypervisor layer, an attacker captures keystrokes before they reach the guest OS, including passwords, PINs, and passphrases entered by users.
 
 ### 4. DRAM Bus Snooping
 
@@ -78,7 +78,7 @@ An attacker takes a VM snapshot, restores the VM to that earlier state, and obse
 
 ### 6. Rogue or Coerced Insider
 
-A cloud provider employee with hypervisor access — whether acting maliciously, under coercion, or compelled by a legal order — can inspect any running VM without the tenant's knowledge.
+A cloud provider employee with hypervisor access, whether acting maliciously, under coercion, or compelled by a legal order, can inspect any running VM without the tenant's knowledge.
 
 ### 7. Co-Tenant Side-Channel Attacks
 
@@ -121,7 +121,7 @@ Regulations increasingly require that data be protected from *infrastructure ope
 
 | Regulation | Requirement | Traditional Cloud Problem |
 |---|---|---|
-| **GDPR (Art. 32)** | Appropriate technical measures to protect personal data | Cloud provider has access to personal data in memory |
+| **GDPR** | Appropriate technical measures to protect personal data | Cloud provider has access to personal data in memory |
 | **HIPAA** | PHI must be protected against unauthorised access | Hypervisor admins can access PHI in running workloads |
 | **PCI-DSS** | Cardholder data must be protected at all times | "In use" is an unprotected state in traditional VMs |
 | **FedRAMP / IL4/IL5** | US government data must not be accessible to CSP staff | Structural impossibility without hardware isolation |
@@ -132,7 +132,7 @@ Confidential Computing is increasingly cited by compliance frameworks as the mec
 
 ## Why Hardware Enforcement Is the Only Solution
 
-Any purely software-based isolation boundary can be bypassed by software running at a higher privilege level. This is not a bug — it is by design: the hypervisor must be able to manage guest resources.
+Any purely software-based isolation boundary can be bypassed by software running at a higher privilege level. It is by design: the hypervisor must be able to manage guest resources.
 
 The only way to make the isolation boundary *uncrossable* by software is to have the **hardware itself enforce it**:
 

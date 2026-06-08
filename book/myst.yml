@@ -40,6 +40,15 @@ project:
       file: chapters/11_trustee.md
     - title: Hands-On Labs
       file: chapters/12_labs.md
+      children:
+        - title: "Lab 1: CVM Attestation on Azure"
+          file: chapters/12_lab1_cvm_attestation.md
+        - title: "Lab 2: CoCo Without Confidential Hardware"
+          file: chapters/12_lab2_coco_without_hw.md
+        - title: "Lab 3: CoCo-fy a Workload with cococtl"
+          file: chapters/12_lab3_cococtl.md
+        - title: "Lab 4: CoCo on a Real CVM via Peer-Pods (BYOM)"
+          file: chapters/12_lab4_byom.md
     - title: References
       file: chapters/13_references.md
 site:
