@@ -16,6 +16,18 @@ The content is structured for engineers, architects, and security practitioners 
 - **How** production systems using CNCF Confidential Containers (CoCo) are built
 - **Where** to apply it — use cases, integrations, and deployment topologies
 
+## Prerequisites
+
+This book assumes working familiarity with the following:
+
+- **Virtualisation** — how hypervisors, VMs, and guest/host boundaries work
+- **Containers and Kubernetes** — container runtimes, pod lifecycle, and cluster architecture
+- **Linux fundamentals** — boot process, kernel command line, systemd, and standard CLI tooling
+- **Basic cryptography** — public/private key signing, certificate chains, and hash functions
+- **Cloud infrastructure** — provisioning VMs, networking basics, and cloud CLI tooling (at least one lab targets Azure)
+
+No prior knowledge of confidential computing or hardware security is assumed.
+
 ## Book Structure
 
 ```{tableofcontents}
