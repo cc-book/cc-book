@@ -27,21 +27,6 @@ The content is structured for engineers, architects, and security practitioners 
 ```{tableofcontents}
 ```
 
-## Key Concepts at a Glance
-
-| Concept | Short Definition |
-|---|---|
-| **TEE** | Trusted Execution Environment — hardware-isolated region for computation |
-| **CVM** | Confidential Virtual Machine running inside a TEE |
-| **TCB** | Trusted Computing Base — the minimal set of components you must trust |
-| **RoT** | Root of Trust — foundational hardware security anchor |
-| **TPM** | Trusted Platform Module — chip for secure key storage and measurement |
-| **Remote Attestation** | Cryptographic proof that a remote system is running expected software |
-| **CoCo** | CNCF Confidential Containers — run K8s Pods inside CVMs |
-| **KBS** | Key Broker Service — releases secrets only after attestation |
-
----
-
 > *"Confidential Computing is the protection of data in use by performing computation in a hardware-based, attested Trusted Execution Environment."*
 > — Confidential Computing Consortium
 
