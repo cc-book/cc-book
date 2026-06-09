@@ -67,6 +67,19 @@ Application code vulnerabilities, availability attacks, and physical attacks are
 
 ---
 
+## Attestation in Confidential Containers
+
+In Confidential Containers, attestation is framed as **resource requests**: before Trustee grants access to a resource (such as a decryption key or sealed secret), it determines whether the requester — the TEE — is trustworthy.
+
+Attestation in CoCo happens *lazily* — only when an operation first depends on a resource. This might occur:
+
+- Before container startup (e.g., to retrieve an image decryption key or a sealed secret)
+- Or later in the workload lifecycle
+
+If a workload requires no resources, it won't be attested — which would make it insecure by design. Conversely, successfully receiving a resource (especially a secret known only to Trustee) implies attestation has already occurred.
+
+---
+
 ## Integrity Protection for CoCo CVM Images
 
 Dm-verity protected read-only OS rootfs prevents tampering with the CVM image. The kernel, kernel cmd line, and initrd are measured and included in the attestation report. Any change to the OS image changes the measurements, causing attestation to fail.

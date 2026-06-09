@@ -27,8 +27,13 @@ project:
       file: chapters/03_use_cases.md
     - title: Building Blocks
       file: chapters/04_building_blocks.md
-    - title: Remote Attestation
-      file: chapters/05_remote_attestation.md
+      children:
+        - title: Concepts
+          file: chapters/04a_concepts.md
+        - title: TEE Technologies
+          file: chapters/04b_tee_technologies.md
+        - title: Remote Attestation
+          file: chapters/05_remote_attestation.md
     - title: Three Pillars of Confidential Computing
       file: chapters/06_three_pillars.md
       children:

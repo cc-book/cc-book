@@ -432,213 +432,40 @@ This enables a clean separation that was previously impossible:
 
 # Building Blocks
 
-This section will take you through some of the foundational elements of confidential computing.
+Before diving into Confidential Containers, it helps to understand the foundational concepts and technologies that make confidential computing possible.
 
-## Root of Trust (RoT)
+This section covers three areas:
 
-**A Root of Trust** is an essential, foundational security component that provides a set of trustworthy functions that the rest of the device or system can use to establish strong levels of security.
-
-*[Trusted Computing Group What is a Root of Trust?](https://trustedcomputinggroup.org/about/what-is-a-root-of-trust-rot/)*
-
-
-### Functions a RoT Provides
-
-| Function | Description |
-|---|---|
-| **Trusted Boot** | Ensures only authorized software starts |
-| **Measurement** | Records what software ran (in a tamper-proof way) |
-| **Secure Storage** | Stores cryptographic keys isolated from system software |
-| **Reporting** | Produces signed attestation reports |
-| **Verification** | Validates other components' integrity |
-
-Example RoTs - AMD Secure Processor, Trusted Platform Module (TPM), Virtual Trusted Platform Module (vTPM), Device Identifier Composition Engine (DICE)
-
----
-
-## Trusted Platform Module (TPM) and vTPM
-
-TPM (Trusted Platform Module) is a computer chip (microcontroller) that can securely store artifacts used to authenticate the platform (your PC or laptop). These artifacts can include passwords, certificates, or encryption keys. A TPM can also be used to store platform measurements that help ensure that the platform remains trustworthy. It's an example of a RoT component.
-
-A Virtual Trusted Platform Module (vTPM) is a software-based representation of a physical Trusted Platform Module (TPM) 2.0 chip
-
-*[Trusted Computing Group TPM summary](https://trustedcomputinggroup.org/resource/trusted-platform-module-tpm-summary/)*
-
-### TPM Platform Configuration Registers (PCRs)
-
-PCRs are special registers inside a TPM where measurements (hashes) are stored. They can only be **extended** (not overwritten):
-
-```
-New_PCR_Value = SHA256(Old_PCR_Value || New_Measurement)
-```
-
-| PCR | What It Measures |
-|---|---|
-| 0 | UEFI firmware |
-| 1 | UEFI firmware configuration |
-| 4 | Boot manager |
-| 7 | Secure Boot policy |
-| 8-15 | OS/application measurements |
-
-:::{warning}
-A vTPM managed by a hypervisor means the hypervisor is in the Trusted Computing Base (TCB). If the hypervisor is compromised, the vTPM's protections can be bypassed. This is addressed by putting the vTPM *inside* the TEE using technologies like SVSM.
-:::
-
----
-
-## Trusted Computing Base (TCB)
-
-The **Trusted Computing Base** is the set of all hardware, firmware, and software components that you *must trust* for your system's security to hold. In a traditional cloud VM, this includes the hypervisor and host OS — both controlled by the cloud provider.
-
-[diagram]
-
----
-
-## Secure Boot, Trusted Boot, and Measured Boot
-
-### Secure Boot and Trusted Boot
-
-**Secure Boot** verifies digital signatures before running bootloaders.
-
-- It is a feature of the Unified Extensible Firmware Interface (UEFI). It's used to check bootloaders, key operating system files, and the ROM for any tampering attempts.
-- UEFI firmware has signatures stored in a database and Secure Boot will check those signatures. If the signatures don't match, then something was modified incorrectly and the boot process will halt.
-
-**Trusted Boot** extends this with a chain of verification — each stage checks the next before passing control.
-
-- The bootloader (which we've verified to be trustworthy) will check the digital signature of the operating system kernel before loading it.
-- The verified kernel will then verify every other part of the OS startup process including boot drivers and startup files, to make sure those components are all safe.
-
-[diagram]
-
-### Measured Boot
-
-Measured boot uses hardware Root of Trust (RoT) eg. TPM to record a cryptographic hash of every stage of the boot process into PCRs. This creates a tamper-evident audit trail that can be verified remotely at any point in time.
-
-Measured Boot doesn't *block* anything — instead it **records** everything that runs (eg. into the TPM's PCRs). This enables **remote attestation** — a third party can cryptographically verify the exact software stack that booted.
-
-
-[diagram]
-
-### Summary Comparison
-
-Comparison of boot security mechanisms: Secure Boot and Trusted Boot prevent unauthorized software from running; Measured Boot records what ran and enables remote verification via attestation.
-
-[diagram]
-
----
-
-## Trusted Execution Environments (TEEs)
-
-A **Trusted Execution Environment (TEE)** is a hardware-enforced, isolated region of a processor that protects code and data from unauthorized access — including from privileged software like the OS, hypervisor, or firmware.
-
-[diagram]
-
-| Characteristic | Description |
-|---|---|
-| **Memory Encryption** | All data in the TEE's memory is encrypted by the hardware. Even physical DRAM access reveals only ciphertext. |
-| **Isolation** | The TEE is isolated from other processes, VMs, and the host OS. Hardware enforces this boundary. |
-| **Remote Attestation** | The TEE can prove its identity and integrity to remote parties cryptographically. |
-| **Data Integrity** | The hardware detects and prevents tampering with TEE memory. |
-
-### Types of TEEs
-
-[diagram]
-
-**VM-Based TEEs** encrypt memory along a traditional VM boundary. The hypervisor cannot read VM memory.
-
-Examples: AMD SEV-SNP, Intel TDX, IBM Secure Execution, IBM PEF
-
-- Protects entire existing applications without code changes
-- Supports standard Linux distributions
-- Scales to large memory and multi-core workloads
-
-**Process-Based TEEs** split an app into trusted and untrusted components. Only the sensitive part runs in encrypted memory.
-
-Example: Intel SGX
-
-- Smaller attack surface (only enclave code is in the TCB)
-- Requires application refactoring to separate trusted/untrusted components
-- Historically constrained to small enclave memory sizes
-
-### TCB Reduction with Confidential Computing
-
-Confidential Computing dramatically reduces the TCB. The hypervisor and host OS move out of the TCB — you no longer need to trust the cloud provider's software stack.
-
-[diagram]
-
-#### TCB for VM TEEs with vTPM
-
-[diagram]
-
-| Configuration | vTPM Location | Hypervisor in TCB? | Used By |
-|---|---|---|---|
-| vTPM outside TEE | Managed by hypervisor | ✔ Yes | AWS, GCP |
-| vTPM inside TEE | Inside the CVM | ✗ No | Azure CVMs, bare metal (with SVSM) |
-
-#### TCB for VM TEEs without vTPM
-
-When no vTPM is used (direct boot model for SNP/TDX), the hypervisor is excluded from the TCB entirely. The hardware Root of Trust generates attestation reports directly.
-
-[diagram]
-
-#### TCB for AMD VM TEEs with SVSM
-
-**SVSM** (Secure VM Service Module) runs *inside* the TEE and provides hypervisor-like services (such as vTPM) without involving the hypervisor itself. This means even the cloud provider's hypervisor is excluded from the TCB.
-
-[diagram]
-
-### AMD SEV-SNP Measured Boot
-
-Here is an example measured boot flow with an SNP VM TEE in a KVM/Qemu environment. Note that TPM is not used. Instead, the hashes of the kernel, kernel command line and initramfs are stored in the guest memory and measured by the AMD Secure Processor (SP).
-
-1. Qemu started with -kernel param (direct boot)
-2. Qemu loads OVMF into guest memory
-3. Qemu loads hashes of kernel, kernel command line and initramfs into guest memory
-4. AMD Secure Processor (SP) measures all the guest memory
-5. Once the OVMF is loaded, it will load the kernel and initramfs into memory, but it will continue the boot process only if the hashes of the kernel, kernel command line and initramfs match the hashes stored in OVMF.
-
-The measurements are available any time as part of the attestation report and can be used for remote attestation and the attestation report is signed with the Versioned Chip Endorsement Key (VCEK).
-
-[diagram]
-
-### Intel TDX Measured Boot
-
-Here is an example measured boot flow with a TDX VM TEE in a KVM/Qemu environment. Note that TPM is not used.
-
-1. Qemu started with -kernel param (direct boot)
-2. Qemu loads OVMF into guest memory
-3. OVMF loads kernel and initramfs into memory and measures the kernel, kernel command line and initramfs into Runtime Extendable measurement register (RTMR).
-
-The measurements are available any time (in the event log) can can be used as evidence for remote attestation.
-
-
-[diagram]
-
-### Summary - TPM vs. No-TPM Attestation
-
-[diagram]
-
-| | With TPM | Without TPM (SNP/TDX direct boot) |
-|---|---|---|
-| **Measurements** | PCRs | Specific memory locations (SNP) / RTMRs (TDX) |
-| **Evidence** | PCR Quote + event log | Attestation report / event log |
-| **Secret unsealing** | PCR authorization in hardware | External authorization + policy |
-
-### Summary Comparison of x86 TEE Technologies
-
-| Feature | AMD SEV-SNP | Intel TDX | Intel SGX |
-|---|---|---|---|
-| **Type** | VM-based | VM-based | Process-based |
-| **Granularity** | Full VM | Full VM | Enclave (subset of process) |
-| **App changes needed** | None | None | Yes (trust/untrust split) |
-| **Hypervisor in TCB** | Optional | Optional | N/A |
-| **Available on cloud** | AWS, GCP, Azure | Azure, GCP | AWS, Azure, GCP |
+- **Concepts** — the core ideas: Root of Trust, Trusted Computing Base, TEEs, and boot security mechanisms
+- **TEE Technologies** — how AMD SEV-SNP, Intel TDX, and Intel SGX implement those concepts in practice
+- **Remote Attestation** — how a TEE proves its integrity and initial state to a remote party
 
 
 ---
 
 # Remote Attestation
 
-Remote attestation is the mechanism by which a TEE proves to a remote party that it is genuine, unmodified, and running the expected software. Without attestation, Confidential Computing would just be encrypted memory with no way to verify *what* is running inside.
+Confidential computing has two dimensions: **runtime isolation** and **attestation**.
+
+Runtime isolation — technologies like memory encryption — creates a boundary between the TEE and the untrusted world, protecting data while in use. But isolation alone doesn't address a fundamental problem: a TEE's initial state is typically configured by an untrusted host (for example, a hypervisor setting initial guest memory). Because that initial configuration is highly significant, a TEE is not considered secure unless those properties are validated.
+
+Attestation closes this gap. It *extends trust from a hardware root of trust to a TEE*: the hardware root of trust attests to the TEE's configuration and initial state, typically by signing a report with a key tied to the hardware manufacturer. This is what allows a remote party to confirm they are communicating with a genuine, unmodified TEE running the expected software.
+
+---
+
+## Disambiguating "Attestation"
+
+The term "attestation" is overloaded and worth clarifying before going further:
+
+| Type | Characteristics |
+|---|---|
+| **Host attestation** (TPM-based) | Continuous, non-blocking; periodic checks; corrective actions on failure |
+| **Confidential attestation** | Blocks secret delivery; scoped to the TEE's initial state |
+| **SPIFFE/SPIRE workload attestation** | One component attesting to properties of another |
+
+The parties capable of validating a host environment versus a guest TEE environment are usually distinct, making these separate processes. This chapter focuses on **confidential attestation**.
+
+---
 
 ## Why Attestation Matters
 
@@ -666,7 +493,7 @@ The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verif
 | **Evidence** | Claims produced by the Attester, containing measurements | Attestation report with PCR/RTMR values |
 | **Verifier** | Validates evidence against reference values | Attestation Service (AS) |
 | **Reference Value Provider (RVPS)** | Supplies the "golden" reference measurements | Firmware vendor, OS publisher |
-| **Relying Party** | Uses the attestation result to make decisions |  Application owner, Resource gatekeeper |
+| **Relying Party** | Uses the attestation result to make decisions | Application owner, Resource gatekeeper |
 
 ---
 
@@ -717,63 +544,7 @@ Here is the flow of a passport check model:
 - **Reference Value Management:** Keeping reference values (golden measurements) up to date as software is patched is an ongoing operational challenge.
 - **Third-Party Trust:** When using cloud-provided attestation services, you trust the cloud provider's attestation infrastructure. Self-hosted Trustee eliminates this dependency.
 
-## AMD SEV-SNP and Intel TDX Remote Attestation
 
-AMD SEV-SNP uses a VCEK-signed attestation report rooted in AMD's certificate chain.
-
-Intel TDX uses a TD Quote generated by the Intel Quoting Enclave, verifiable via Intel's PCS (Provisioning Certification Service).
-
-[diagram]
-
-Src: [General overview of AMD SEV-SNP and Intel TDX](https://sys.cs.fau.de/extern/lehre/ws22/akss/material/amd-sev-intel-tdx.pdf)
-
-### AMD SEV-SNP Certificate Chain
-
-```
-AMD Root Key (ARK)
-    └── signs AMD SEV Key (ASK)
-            └── signs VCEK certificate
-                    └── VCEK private key signs SNP attestation report
-```
-
-The VCEK is unique per chip and firmware version. AMD's Key Distribution Service ([KDS](https://wiki.ietf.org/group/rats/referencevalues/amd-key-distribution-service?ref=blog.polyhedra.network)) provides VCEK certificates publicly.
-
-### Intel TDX Certificate Chain
-
-```
-Intel Root CA
-    └── signs Intel Provisioning Certification Key (PCK) Platform CA
-            └── signs PCK Certificate
-                    └── Provisioning Certification Enclave (PCE) certifies Quoting Enclave (QE) Attestation Key
-                            └── QE signs TDX Quote
-```
-
-The PCK (Provisioning Certification Key) certificate is platform-specific and TCB-version dependent. Intel's Provisioning Certification Service ([PCS](https://api.portal.trustedservices.intel.com/content/documentation.html?utm_source=chatgpt.com)) provides PCK certificates. The Quoting Enclave (QE) generates and signs the TDX Quote, while the Provisioning Certification Enclave (PCE) certifies the QE attestation key.
-
-### Summary Comparison
-
-| AMD SEV-SNP                | Intel TDX                     |
-| -------------------------- | ----------------------------- |
-| AMD KDS                    | Intel PCS                     |
-| VCEK certificate retrieval | PCK certificate retrieval     |
-| ARK/ASK chain              | Intel Root CA/PCK CA chain    |
-| SNP report collateral      | Quote verification collateral |
-
-One important operational difference between AMD and Intel is the way they distribute their certificates:
-
-AMD KDS:
-
-- stateless
-- fetch VCEK by chip ID + TCB version
-
-Intel PCS:
-
-- more infrastructure-heavy
-- requires platform registration
-- subscription/API access
-- PCCS caching infrastructure
-
----
 
 ---
 
@@ -1078,6 +849,19 @@ The Confidential VM runs external to the worker node. The worker node hosts only
 The untrusted components include the host OS, hypervisor, cloud provider software, other VMs on the same host, other processes on the worker node, and the Kubernetes control plane (kubelet, etcd, API server).
 
 Application code vulnerabilities, availability attacks, and physical attacks are out of scope.
+
+---
+
+## Attestation in Confidential Containers
+
+In Confidential Containers, attestation is framed as **resource requests**: before Trustee grants access to a resource (such as a decryption key or sealed secret), it determines whether the requester — the TEE — is trustworthy.
+
+Attestation in CoCo happens *lazily* — only when an operation first depends on a resource. This might occur:
+
+- Before container startup (e.g., to retrieve an image decryption key or a sealed secret)
+- Or later in the workload lifecycle
+
+If a workload requires no resources, it won't be attested — which would make it insecure by design. Conversely, successfully receiving a resource (especially a secret known only to Trustee) implies attestation has already occurred.
 
 ---
 
