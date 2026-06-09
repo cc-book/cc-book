@@ -4,7 +4,7 @@
 
 **A Root of Trust** is an essential, foundational security component that provides a set of trustworthy functions that the rest of the device or system can use to establish strong levels of security.
 
-*[Trusted Computing Group What is a Root of Trust?](https://trustedcomputinggroup.org/about/what-is-a-root-of-root-rot/)*
+*[Trusted Computing Group What is a Root of Trust?](https://trustedcomputinggroup.org/about/what-is-a-root-of-trust/)*
 
 ### Functions a RoT Provides
 

@@ -22,6 +22,7 @@ This book assumes working familiarity with the following:
 
 - **Virtualisation** — how hypervisors, VMs, and guest/host boundaries work
 - **Containers and Kubernetes** — container runtimes, pod lifecycle, and cluster architecture
+- **Kata Containers** — VM-based container runtime and its relationship to the Kubernetes CRI
 - **Linux fundamentals** — boot process, kernel command line, systemd, and standard CLI tooling
 - **Basic cryptography** — public/private key signing, certificate chains, and hash functions
 - **Cloud infrastructure** — provisioning VMs, networking basics, and cloud CLI tooling (at least one lab targets Azure)
