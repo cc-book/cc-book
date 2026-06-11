@@ -50,6 +50,16 @@ Three key phrases in this definition:
 2. **Hardware-based** — the security guarantee comes from the hardware itself, not from software policies that can be bypassed.
 3. **Attested Trusted Execution Environment (TEE)** — you can *verify* (remotely) that the environment is genuine and unmodified before trusting it with your secrets.
 
+The CCC further specifies that TEEs provide three distinct security properties that are often overlooked:
+
+| Property | What it means |
+|---|---|
+| **Data confidentiality** | Code running outside the TEE cannot read data inside it |
+| **Data integrity** | Code running outside the TEE cannot modify data inside it without detection |
+| **Code integrity** | The code running inside the TEE cannot be replaced or tampered with by outside software |
+
+Code integrity in particular is frequently underestimated — it ensures not just that your *data* is protected, but that the *computation itself* has not been altered by a privileged adversary.
+
 ## The Core Problem Confidential Computing Solves
 
 Confidential Computing solves the problem of securing remote computation — executing software on a remote computer owned by an untrusted party, with integrity and confidentiality guarantees.
