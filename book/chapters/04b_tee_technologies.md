@@ -72,6 +72,13 @@ The VCEK is unique per chip and firmware version. AMD's Key Distribution Service
 
 KDS is stateless: certificates are fetched on demand by chip ID and TCB version, with no platform registration required.
 
+The root of trust for the chain is AMD's ARK (AMD Root Key), a long-lived key pair whose public half is published by AMD and embedded in verifier software. Trusting ARK means trusting AMD as the hardware manufacturer — it is the foundational assumption for all AMD SEV-SNP attestation.
+
+:::{admonition} Offline / Disconnected Deployments
+:class: warning
+In air-gapped or network-restricted environments, nodes cannot reach AMD KDS to retrieve VCEK certificates at runtime. Operators must pre-fetch and cache certificate collateral (ARK, ASK, VCEK) and distribute it out-of-band. Failing to plan for this is a common production operational challenge.
+:::
+
 ---
 
 ## Intel TDX
@@ -104,6 +111,13 @@ Intel Root CA
 The PCK (Provisioning Certification Key) certificate is platform-specific and TCB-version dependent. Intel's Provisioning Certification Service ([PCS](https://api.portal.trustedservices.intel.com/content/documentation.html)) provides PCK certificates. The Quoting Enclave (QE) generates and signs the TDX Quote, while the Provisioning Certification Enclave (PCE) certifies the QE attestation key.
 
 PCS is more infrastructure-heavy than AMD KDS: it requires platform registration, subscription/API access, and a PCCS caching layer for production deployments.
+
+The root of trust is Intel's Root CA, whose public key is published by Intel and embedded in verifier software. Trusting Intel Root CA means trusting Intel as the hardware manufacturer.
+
+:::{admonition} Offline / Disconnected Deployments
+:class: warning
+Because PCK certificate retrieval from Intel PCS requires platform registration and network access, disconnected or air-gapped deployments require a local PCCS (Provisioning Certificate Caching Service) instance pre-loaded with the relevant certificate collateral. This is a significant operational requirement that must be planned for ahead of deployment.
+:::
 
 ---
 
