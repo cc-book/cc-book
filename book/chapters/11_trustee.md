@@ -48,7 +48,7 @@ Two attestation models are supported:
 
 **Background Check Model** — the default CoCo mode. The CVM sends evidence directly to Trustee; Trustee verifies and releases the secret.
 
-```{figure} ../images/trustee_backgroud_check.png
+```{figure} ../images/trustee_background_check.png
 :alt: CoCo Attestation — Background Check Model
 :align: center
 ```
