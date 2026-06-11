@@ -1,7 +1,6 @@
 # Confidential Computing Deep Dive
 
-**Author:** Pradipta Banerjee, Project Maintainer — Confidential Containers  
-**Acknowledgements:** Ariel Adam, Christophe de Dinechin, Emanuele Esposito, Jens Freimann, Tobin Feldman-Fitzthum, Vitaly Kuznetsov, Magnus Kulke and many others in the community.
+**Author:** Pradipta Banerjee, Project Maintainer — Confidential Containers
 
 ---
 
