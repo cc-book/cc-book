@@ -119,13 +119,13 @@ Not all privileged attackers are equal. Here is how they map to real roles:
 
 Regulations increasingly require that data be protected from *infrastructure operators*, not just external attackers:
 
-| Regulation | Requirement | Traditional Cloud Problem |
-|---|---|---|
-| **GDPR** | Appropriate technical measures to protect personal data | Cloud provider has access to personal data in memory |
-| **HIPAA** | PHI must be protected against unauthorised access | Hypervisor admins can access PHI in running workloads |
-| **PCI-DSS** | Cardholder data must be protected at all times | "In use" is an unprotected state in traditional VMs |
-| **FedRAMP / IL4/IL5** | US government data must not be accessible to CSP staff | Structural impossibility without hardware isolation |
-| **DORA (EU)** | ICT risk management must address third-party service provider access | Cloud infrastructure access breaks the ICT supply chain trust requirements |
+| Regulation | Jurisdiction | Requirement | Traditional Cloud Problem |
+|---|---|---|---|
+| **GDPR** | EU | Appropriate technical measures to protect personal data | Cloud provider has access to personal data in memory |
+| **HIPAA** | US | PHI must be protected against unauthorised access | Hypervisor admins can access PHI in running workloads |
+| **PCI-DSS** | Global | Cardholder data must be protected at all times | "In use" is an unprotected state in traditional VMs |
+| **FedRAMP / IL4/IL5** | US Federal | US government data must not be accessible to CSP staff | Structural impossibility without hardware isolation |
+| **DORA** | EU | ICT risk management must address third-party service provider access | Cloud infrastructure access breaks the ICT supply chain trust requirements |
 
 Confidential Computing is increasingly cited by compliance frameworks as the mechanism to satisfy these "data in use" requirements.
 
