@@ -2,6 +2,13 @@
 
 Confidential computing has two dimensions: **runtime isolation** and **attestation**.
 
+:::{note}
+**What does "remote" mean in remote attestation?**
+
+The term is used differently across the industry. Intel historically defines "remote" as *outside the CPU package* — i.e., any entity other than the CPU itself. The CCC, Red Hat, and most cloud-native practitioners use "remote" to mean *a party not under the control of the cloud infrastructure operator* — a verifier on a completely different network, beyond the provider's administrative reach. This book uses the CCC/industry definition: remote attestation lets a *workload owner* verify a TEE without trusting the cloud provider's own attestation infrastructure.
+:::
+
+
 Runtime isolation — technologies like memory encryption — creates a boundary between the TEE and the untrusted world, protecting data while in use. But isolation alone doesn't address a fundamental problem: a TEE's initial state is typically configured by an untrusted host (for example, a hypervisor setting initial guest memory). Because that initial configuration is highly significant, a TEE is not considered secure unless those properties are validated.
 
 Attestation closes this gap. It *extends trust from a hardware root of trust to a TEE*: the hardware root of trust attests to the TEE's configuration and initial state, typically by signing a report with a key tied to the hardware manufacturer. This is what allows a remote party to confirm they are communicating with a genuine, unmodified TEE running the expected software.
@@ -50,6 +57,16 @@ The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verif
 | **Reference Value Provider (RVPS)** | Supplies the "golden" reference measurements | Firmware vendor, OS publisher |
 | **Relying Party** | Uses the attestation result to make decisions | Application owner, Resource gatekeeper |
 
+:::{note}
+**Evidence vs attestation report — terminology clarification**
+
+This chapter uses the IETF RATS term **Evidence** (capitalised) for the abstract concept. In practice, Evidence takes hardware-specific forms:
+
+- AMD SEV-SNP produces an **SNP attestation report** (signed by the VCEK)
+- Intel TDX produces a **TDX Quote** (signed by the Quoting Enclave)
+
+When you see "attestation report" elsewhere in this book or in vendor documentation, it refers to one of these concrete Evidence artifacts. The terms are used interchangeably; context determines which hardware format is meant.
+:::
 ---
 
 ## Attestation Models
@@ -66,7 +83,7 @@ Here is the flow of a background check model:
 6. **Relying Party decides** whether to release the resource (key, secret, certificate)
 
 ```{figure} ../images/rats_background_check.png
-:alt: CoCo Attestation — Background Check Model
+:alt: CC Attestation — Background Check Model
 :align: center
 ```
 
@@ -82,9 +99,18 @@ Here is the flow of a passport check model:
 6. **Relying Party decides** whether to release the resource (key, secret, certificate)
 
 ```{figure} ../images/rats_passport.png
-:alt: CoCo Attestation — Passport Model
+:alt: CC Attestation — Passport Model
 :align: center
 ```
+
+### When to Use Each Model
+
+| | Background Check | Passport |
+|---|---|---|
+| **Verification trigger** | Each Relying Party verifies independently | Attester verifies once; presents token to many |
+| **Freshness** | Evidence is fresh per request | Token has a bounded validity window (TTL) |
+| **Relying Party requirement** | Must have access to a Verifier | Only needs to validate the token signature |
+| **Best for** | Single Relying Party, or when fresh evidence is required every time | Multiple Relying Parties that trust the same Verifier |
 
 ---
 
@@ -104,4 +130,3 @@ Here is the flow of a passport check model:
 - **Revocation:** If a CPU is found vulnerable, AMD/Intel can revoke VCEK/PCK certificates. Verifiers should check revocation lists.
 - **Reference Value Management:** Keeping reference values (golden measurements) up to date as software is patched is an ongoing operational challenge.
 - **Third-Party Trust:** When using cloud-provided attestation services, you trust the cloud provider's attestation infrastructure. Self-hosted Trustee eliminates this dependency.
-

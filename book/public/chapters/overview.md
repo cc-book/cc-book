@@ -23,7 +23,7 @@ When you run a workload in an infrastructure managed by an external entity, you 
 
 - **Data Vulnerability when in Use** — even if your data is encrypted at rest and in transit, it must be decrypted into plaintext memory when the CPU processes it. Anyone with privileged access to the host can read that memory.
 - **Insider Threats** — employees, contracted vendors, or malicious administrators with physical or hypervisor-level access can inspect running workloads.
-- **Compliance Needs** — regulations like HIPAA, GDPR, and PCI-DSS require demonstrable data protection, including against infrastructure operators.
+- **Compliance Needs** — regulations like HIPAA, GDPR, PCI-DSS, and DORA require demonstrable data protection, including against infrastructure operators.
 - **Multi-Tenant Risks** — in shared infrastructure software and hardware vulnerabilities can expose data between tenants.
 
 ## Current Solutions
@@ -49,6 +49,16 @@ Three key phrases in this definition:
 1. **Protection of data in use** — not just at rest or in transit, but while actively being processed.
 2. **Hardware-based** — the security guarantee comes from the hardware itself, not from software policies that can be bypassed.
 3. **Attested Trusted Execution Environment (TEE)** — you can *verify* (remotely) that the environment is genuine and unmodified before trusting it with your secrets.
+
+The CCC further specifies that TEEs provide three distinct security properties that are often overlooked:
+
+| Property | What it means |
+|---|---|
+| **Data confidentiality** | Code running outside the TEE cannot read data inside it |
+| **Data integrity** | Code running outside the TEE cannot modify data inside it without detection |
+| **Code integrity** | The code running inside the TEE cannot be replaced or tampered with by outside software |
+
+Code integrity in particular is frequently underestimated — it ensures not just that your *data* is protected, but that the *computation itself* has not been altered by a privileged adversary.
 
 ## The Core Problem Confidential Computing Solves
 

@@ -119,12 +119,13 @@ Not all privileged attackers are equal. Here is how they map to real roles:
 
 Regulations increasingly require that data be protected from *infrastructure operators*, not just external attackers:
 
-| Regulation | Requirement | Traditional Cloud Problem |
-|---|---|---|
-| **GDPR** | Appropriate technical measures to protect personal data | Cloud provider has access to personal data in memory |
-| **HIPAA** | PHI must be protected against unauthorised access | Hypervisor admins can access PHI in running workloads |
-| **PCI-DSS** | Cardholder data must be protected at all times | "In use" is an unprotected state in traditional VMs |
-| **FedRAMP / IL4/IL5** | US government data must not be accessible to CSP staff | Structural impossibility without hardware isolation |
+| Regulation | Jurisdiction | Requirement | Traditional Cloud Problem |
+|---|---|---|---|
+| **GDPR** | EU | Appropriate technical measures to protect personal data | Cloud provider has access to personal data in memory |
+| **HIPAA** | US | PHI must be protected against unauthorised access | Hypervisor admins can access PHI in running workloads |
+| **PCI-DSS** | Global | Cardholder data must be protected at all times | "In use" is an unprotected state in traditional VMs |
+| **FedRAMP / IL4/IL5** | US Federal | US government data must not be accessible to CSP staff | Structural impossibility without hardware isolation |
+| **DORA** | EU | ICT risk management must address third-party service provider access | Cloud infrastructure access breaks the ICT supply chain trust requirements |
 
 Confidential Computing is increasingly cited by compliance frameworks as the mechanism to satisfy these "data in use" requirements.
 
@@ -160,7 +161,7 @@ This is what **Confidential Computing** provides: a hardware-enforced boundary t
 
 Confidential Computing introduces **hardware-enforced TEE boundaries** where:
 
-- VM memory is encrypted by the CPU — the hypervisor sees only ciphertext, not plaintext data
+- VM memory is hardware-encrypted and access-controlled by the CPU — for example, Intel TDX marks guest memory as "TD Private", enforcing at the hardware level that only the TD can access it; the hypervisor has no hardware path to plaintext, regardless of privilege level
 - The Trusted Computing Base (TCB) is reduced — the hypervisor and host OS are no longer trusted components
 - Boot measurements are rooted in hardware — not in provider-controlled firmware
 - Tenants can independently verify the integrity of their environment before trusting it with secrets
@@ -213,20 +214,20 @@ For AMD SEV-SNP specifically:
 
 Researchers built a custom **interposition device** (~$1,000 of off-the-shelf electronics) that sits between the CPU and DIMM and passively captures all memory bus traffic. The attack exploits a fundamental weakness:
 
-> **AES-XTS encryption, used by both Intel and AMD, is deterministic** — identical plaintexts always produce identical ciphertexts. This allows pattern analysis and data extraction without direct decryption.
+> **AES-XTS encryption, used by both Intel and AMD, is deterministic** — identical plaintexts always produce identical ciphertexts. This allows pattern analysis and data extraction without direct decryption. AES-XTS was chosen specifically for performance: it operates on fixed-size tweakable blocks with no IV negotiation overhead, making it suitable for low-latency memory encryption. The trade-off is this determinism vulnerability.
 
 Even AMD's **Ciphertext Hiding** feature (designed to obscure memory patterns) was shown to be insufficient.
 
 **What can be extracted:**
 
 - Cryptographic keys from Intel TDX and AMD SEV-SNP guests
-- **ECDSA attestation keys** from Intel's Provisioning Certification Enclave (PCE) — allowing an attacker to **fake valid attestation reports**
+- **ECDSA attestation keys** from Intel's Provisioning Certification Enclave (PCE) — the PCE-certified Quoting Enclave (QE) private key can be extracted, allowing an attacker to generate new TDX Quotes (the hardware-specific attestation evidence) that are cryptographically indistinguishable from genuine ones
 - Private signing keys from OpenSSL's ECDSA implementation on fully patched systems
 - Once attestation keys are extracted, the attack extends to **Nvidia GPU Confidential Computing**
 
 **Notable:** this is the first demonstrated attack against DDR5, the latest generation of memory hardware.
 
-**Vendor response:** Both AMD and Intel classify physical bus interposition as **out of scope** for their TEE threat models. No firmware mitigations are planned. Researchers suggest software-level countermeasures against deterministic encryption, though these carry performance costs.
+**Vendor response:** Both AMD and Intel classify physical bus interposition as **out of scope** for their TEE threat models. No firmware mitigations are planned. Researchers suggest firmware- and cryptographic-library-level countermeasures against deterministic encryption (e.g., probabilistic encryption schemes in the TEE firmware or TLS libraries), though these carry performance costs.
 
 *References: [The Hacker News](https://thehackernews.com/2025/10/new-teefail-side-channel-attack.html)*
 
