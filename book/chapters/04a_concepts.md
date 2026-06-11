@@ -26,6 +26,10 @@ TPM (Trusted Platform Module) is a computer chip (microcontroller) that can secu
 
 A Virtual Trusted Platform Module (vTPM) is a software-based representation of a physical Trusted Platform Module (TPM) 2.0 chip.
 
+:::{warning}
+**A software vTPM is only as trustworthy as what manages it.** If the vTPM is managed by the hypervisor, then the hypervisor is in the Trusted Computing Base (TCB) — a compromised hypervisor can forge vTPM measurements and attestation reports. This is addressed by placing the vTPM *inside* the TEE using SVSM (Secure VM Service Module), which removes the hypervisor from the TCB entirely.
+:::
+
 *[Trusted Computing Group TPM summary](https://trustedcomputinggroup.org/resource/trusted-platform-module-tpm-summary/)*
 
 ### TPM Platform Configuration Registers (PCRs)
@@ -44,9 +48,6 @@ New_PCR_Value = SHA256(Old_PCR_Value || New_Measurement)
 | 7 | Secure Boot policy |
 | 8-15 | OS/application measurements |
 
-:::{warning}
-A vTPM managed by a hypervisor means the hypervisor is in the Trusted Computing Base (TCB). If the hypervisor is compromised, the vTPM's protections can be bypassed. This is addressed by putting the vTPM *inside* the TEE using technologies like SVSM.
-:::
 
 ---
 
