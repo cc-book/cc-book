@@ -5,20 +5,24 @@ PORT      := 3000
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install build serve clean rebuild
+.PHONY: help install hooks build serve clean rebuild
 
 help:
 	@echo "Confidential Computing Jupyter Book"
 	@echo ""
 	@echo "Targets:"
-	@echo "  install   Install dependencies via uv"
+	@echo "  install   Install dependencies and git hooks"
+	@echo "  hooks     Configure git to use .githooks/"
 	@echo "  build     Build the HTML book"
 	@echo "  serve     Start the live-preview server (port $(PORT))"
 	@echo "  clean     Remove build artefacts"
 	@echo "  rebuild   Clean then build"
 
-install:
+install: hooks
 	uv sync
+
+hooks:
+	git config core.hooksPath .githooks
 
 build:
 	uv run python generate_llms.py
