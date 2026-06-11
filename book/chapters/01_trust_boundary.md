@@ -161,7 +161,7 @@ This is what **Confidential Computing** provides: a hardware-enforced boundary t
 
 Confidential Computing introduces **hardware-enforced TEE boundaries** where:
 
-- VM memory is encrypted by the CPU — the hypervisor sees only ciphertext, not plaintext data
+- VM memory is hardware-encrypted and access-controlled by the CPU — for example, Intel TDX marks guest memory as "TD Private", enforcing at the hardware level that only the TD can access it; the hypervisor has no hardware path to plaintext, regardless of privilege level
 - The Trusted Computing Base (TCB) is reduced — the hypervisor and host OS are no longer trusted components
 - Boot measurements are rooted in hardware — not in provider-controlled firmware
 - Tenants can independently verify the integrity of their environment before trusting it with secrets
