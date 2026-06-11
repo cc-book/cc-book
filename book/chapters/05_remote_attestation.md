@@ -57,6 +57,16 @@ The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verif
 | **Reference Value Provider (RVPS)** | Supplies the "golden" reference measurements | Firmware vendor, OS publisher |
 | **Relying Party** | Uses the attestation result to make decisions | Application owner, Resource gatekeeper |
 
+:::{note}
+**Evidence vs attestation report — terminology clarification**
+
+This chapter uses the IETF RATS term **Evidence** (capitalised) for the abstract concept. In practice, Evidence takes hardware-specific forms:
+
+- AMD SEV-SNP produces an **SNP attestation report** (signed by the VCEK)
+- Intel TDX produces a **TDX Quote** (signed by the Quoting Enclave)
+
+When you see "attestation report" elsewhere in this book or in vendor documentation, it refers to one of these concrete Evidence artifacts. The terms are used interchangeably; context determines which hardware format is meant.
+:::
 ---
 
 ## Attestation Models
