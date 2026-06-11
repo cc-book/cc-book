@@ -83,7 +83,7 @@ Here is the flow of a background check model:
 6. **Relying Party decides** whether to release the resource (key, secret, certificate)
 
 ```{figure} ../images/rats_background_check.png
-:alt: CoCo Attestation — Background Check Model
+:alt: CC Attestation — Background Check Model
 :align: center
 ```
 
@@ -99,9 +99,18 @@ Here is the flow of a passport check model:
 6. **Relying Party decides** whether to release the resource (key, secret, certificate)
 
 ```{figure} ../images/rats_passport.png
-:alt: CoCo Attestation — Passport Model
+:alt: CC Attestation — Passport Model
 :align: center
 ```
+
+### When to Use Each Model
+
+| | Background Check | Passport |
+|---|---|---|
+| **Verification trigger** | Each Relying Party verifies independently | Attester verifies once; presents token to many |
+| **Freshness** | Evidence is fresh per request | Token has a bounded validity window (TTL) |
+| **Relying Party requirement** | Must have access to a Verifier | Only needs to validate the token signature |
+| **Best for** | Single Relying Party, or when fresh evidence is required every time | Multiple Relying Parties that trust the same Verifier |
 
 ---
 
@@ -121,4 +130,3 @@ Here is the flow of a passport check model:
 - **Revocation:** If a CPU is found vulnerable, AMD/Intel can revoke VCEK/PCK certificates. Verifiers should check revocation lists.
 - **Reference Value Management:** Keeping reference values (golden measurements) up to date as software is patched is an ongoing operational challenge.
 - **Third-Party Trust:** When using cloud-provided attestation services, you trust the cloud provider's attestation infrastructure. Self-hosted Trustee eliminates this dependency.
-
