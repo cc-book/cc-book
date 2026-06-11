@@ -23,7 +23,7 @@ When you run a workload in an infrastructure managed by an external entity, you 
 
 - **Data Vulnerability when in Use** — even if your data is encrypted at rest and in transit, it must be decrypted into plaintext memory when the CPU processes it. Anyone with privileged access to the host can read that memory.
 - **Insider Threats** — employees, contracted vendors, or malicious administrators with physical or hypervisor-level access can inspect running workloads.
-- **Compliance Needs** — regulations like HIPAA, GDPR, and PCI-DSS require demonstrable data protection, including against infrastructure operators.
+- **Compliance Needs** — regulations like HIPAA, GDPR, PCI-DSS, and DORA require demonstrable data protection, including against infrastructure operators.
 - **Multi-Tenant Risks** — in shared infrastructure software and hardware vulnerabilities can expose data between tenants.
 
 ## Current Solutions

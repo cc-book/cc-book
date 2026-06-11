@@ -125,6 +125,7 @@ Regulations increasingly require that data be protected from *infrastructure ope
 | **HIPAA** | PHI must be protected against unauthorised access | Hypervisor admins can access PHI in running workloads |
 | **PCI-DSS** | Cardholder data must be protected at all times | "In use" is an unprotected state in traditional VMs |
 | **FedRAMP / IL4/IL5** | US government data must not be accessible to CSP staff | Structural impossibility without hardware isolation |
+| **DORA (EU)** | ICT risk management must address third-party service provider access | Cloud infrastructure access breaks the ICT supply chain trust requirements |
 
 Confidential Computing is increasingly cited by compliance frameworks as the mechanism to satisfy these "data in use" requirements.
 
