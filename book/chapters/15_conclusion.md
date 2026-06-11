@@ -54,4 +54,19 @@ For production deployments, the recommended path:
 
 **Pradipta Banerjee** is a Project Maintainer of the [CNCF Confidential Containers](https://github.com/confidential-containers) project. The author's work focuses on bringing Confidential Computing into cloud-native ecosystems and making it accessible to practitioners without hardware security backgrounds.
 
-**Acknowledgements:** Ariel Adam, Axel Saß, Christophe de Dinechin, Emanuele Esposito, Jens Freimann, Mohammed Adnan, Tobin Feldman-Fitzthum, Vitaly Kuznetsov, Magnus Kulke, and many others in the community whose work and feedback shaped this material.
+---
+
+## Acknowledgements
+
+- Ariel Adam
+- Axel Saß
+- Christophe de Dinechin
+- Emanuele Esposito
+- Jens Freimann
+- Magnus Kulke
+- Mohammed Adnan
+- Tobin Feldman-Fitzthum
+- Vitaly Kuznetsov
+
+
+And many others in the community whose work and feedback shaped this material.
