@@ -221,7 +221,7 @@ Even AMD's **Ciphertext Hiding** feature (designed to obscure memory patterns) w
 **What can be extracted:**
 
 - Cryptographic keys from Intel TDX and AMD SEV-SNP guests
-- **ECDSA attestation keys** from Intel's Provisioning Certification Enclave (PCE) — allowing an attacker to **fake valid attestation reports**
+- **ECDSA attestation keys** from Intel's Provisioning Certification Enclave (PCE) — the PCE-certified Quoting Enclave (QE) private key can be extracted, allowing an attacker to generate new TDX Quotes (the hardware-specific attestation evidence) that are cryptographically indistinguishable from genuine ones
 - Private signing keys from OpenSSL's ECDSA implementation on fully patched systems
 - Once attestation keys are extracted, the attack extends to **Nvidia GPU Confidential Computing**
 
