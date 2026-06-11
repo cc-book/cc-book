@@ -56,6 +56,8 @@ project:
           file: chapters/12_lab3_cococtl.md
         - title: "Lab 4: CoCo on a Real CVM via Peer-Pods (BYOM)"
           file: chapters/12_lab4_byom.md
+    - title: Conclusion
+      file: chapters/15_conclusion.md
     - title: Glossary
       file: chapters/14_glossary.md
     - title: References
