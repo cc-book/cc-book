@@ -214,7 +214,7 @@ For AMD SEV-SNP specifically:
 
 Researchers built a custom **interposition device** (~$1,000 of off-the-shelf electronics) that sits between the CPU and DIMM and passively captures all memory bus traffic. The attack exploits a fundamental weakness:
 
-> **AES-XTS encryption, used by both Intel and AMD, is deterministic** — identical plaintexts always produce identical ciphertexts. This allows pattern analysis and data extraction without direct decryption.
+> **AES-XTS encryption, used by both Intel and AMD, is deterministic** — identical plaintexts always produce identical ciphertexts. This allows pattern analysis and data extraction without direct decryption. AES-XTS was chosen specifically for performance: it operates on fixed-size tweakable blocks with no IV negotiation overhead, making it suitable for low-latency memory encryption. The trade-off is this determinism vulnerability.
 
 Even AMD's **Ciphertext Hiding** feature (designed to obscure memory patterns) was shown to be insufficient.
 
@@ -227,7 +227,7 @@ Even AMD's **Ciphertext Hiding** feature (designed to obscure memory patterns) w
 
 **Notable:** this is the first demonstrated attack against DDR5, the latest generation of memory hardware.
 
-**Vendor response:** Both AMD and Intel classify physical bus interposition as **out of scope** for their TEE threat models. No firmware mitigations are planned. Researchers suggest software-level countermeasures against deterministic encryption, though these carry performance costs.
+**Vendor response:** Both AMD and Intel classify physical bus interposition as **out of scope** for their TEE threat models. No firmware mitigations are planned. Researchers suggest firmware- and cryptographic-library-level countermeasures against deterministic encryption (e.g., probabilistic encryption schemes in the TEE firmware or TLS libraries), though these carry performance costs.
 
 *References: [The Hacker News](https://thehackernews.com/2025/10/new-teefail-side-channel-attack.html)*
 
