@@ -55,15 +55,15 @@ A **Confidential Cluster** runs Kubernetes **nodes** themselves inside CVMs (whi
 
 ## Comparing the Pillars
 
-| | Confidential Containers | Confidential Cluster |
-|---|---|---|
-| **What's in the TEE** | Individual pods | Entire K8s nodes |
-| **K8s control plane** | Untrusted (on regular infra) | Trusted (inside CVMs) |
-| **Trust boundary** | Pod level | Cluster level |
-| **Admin Trust** | Infra and cluster admin are untrusted | Infra admin is untrusted |
-| **Multi-tenancy** | Since cluster admin is untrusted, each pod can belong to different tenant | Since cluster admin is trusted, it can't be used for multi-tenancy |
-| **Operation Type** | Day 2 Operation - can be deployed on existing K8s cluster | Day 1 Operation - requires new K8s cluster |
-| **Use case** | Workload isolation | Full cluster isolation |
+| | Confidential VM | Confidential Containers | Confidential Cluster |
+|---|---|---|---|
+| **What's in the TEE** | The entire VM | The entire VM including the pod | Entire K8s nodes |
+| **K8s control plane** | N/A | Untrusted (on regular infra) | Trusted (inside CVMs) |
+| **Trust boundary** | VM level | VM level | Cluster level |
+| **Admin Trust** | Infra admin is untrusted | Infra and cluster admin are untrusted | Infra admin is untrusted |
+| **Multi-tenancy** | N/A | Since cluster admin is untrusted, each pod can belong to different tenant | Since cluster admin is trusted, it can't be used for multi-tenancy |
+| **Operation Type** | Standalone — no K8s required | Day 2 Operation — can be deployed on existing K8s cluster | Day 1 Operation — requires new K8s cluster |
+| **Use case** | Protect standalone workloads | Workload isolation within K8s | Full cluster isolation |
 
 ---
 
