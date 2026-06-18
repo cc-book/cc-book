@@ -50,7 +50,7 @@ Here is an example measured boot flow with an SNP VM TEE in a KVM/Qemu environme
 2. Qemu loads OVMF into guest memory
 3. Qemu loads hashes of kernel, kernel command line and initramfs into guest memory
 4. AMD Secure Processor (SP) measures all the guest memory
-5. Once the OVMF is loaded, it will load the kernel and initramfs into memory, but it will continue the boot process only if the hashes of the kernel, kernel command line and initramfs match the hashes stored in OVMF.
+5. Once the OVMF is loaded, it will load the kernel and initramfs into memory, but it will continue the boot process only if the hashes of the kernel, kernel command line and initramfs match the hashes in the measured SEV hashes page in guest memory. (OVMF holds no hash values itself — QEMU injects the hashes page into guest memory, and it is covered by the launch measurement.)
 
 The measurements are available at any time as part of the attestation report and can be used for remote attestation. The attestation report is signed with the Versioned Chip Endorsement Key (VCEK).
 
@@ -89,9 +89,10 @@ Here is an example measured boot flow with a TDX VM TEE in a KVM/Qemu environmen
 
 1. Qemu started with -kernel param (direct boot)
 2. Qemu loads OVMF into guest memory
-3. OVMF loads kernel and initramfs into memory and measures the kernel, kernel command line and initramfs into Runtime Extendable Measurement Registers (RTMRs).
+3. The initial TD contents are measured into the build-time register **MRTD** by the TDX module.
+4. OVMF (TDVF) measures the kernel into **RTMR1**; the kernel's EFI stub then measures the kernel command line and initramfs into **RTMR2**. RTMRs are Runtime Extendable Measurement Registers.
 
-The measurements are available at any time (in the event log) and can be used as evidence for remote attestation.
+The measurements (MRTD plus the RTMRs and their event log) are available at any time and can be used as evidence for remote attestation.
 
 ```{figure} ../images/page_29.png
 :alt: Measured boot with Intel TDX

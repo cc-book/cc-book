@@ -107,8 +107,8 @@ Key PCRs for CVMs:
 
 | PCR | What it covers |
 |---|---|
-| PCR4 | Hashes of loaded UEFI binaries |
-| PCR7 | Secure Boot state + certificates used |
+| PCR4 | Boot manager code and boot attempts |
+| PCR7 | Secure Boot policy (PK/KEK/db/dbx + the db entry used to authorize each loaded image) |
 | PCR11 (UKI via systemd-stub) | Kernel, initramfs, command line, all UKI sections |
 
 ---

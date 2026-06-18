@@ -44,8 +44,8 @@ New_PCR_Value = SHA256(Old_PCR_Value || New_Measurement)
 |---|---|
 | 0 | UEFI firmware |
 | 1 | UEFI firmware configuration |
-| 4 | Boot manager |
-| 7 | Secure Boot policy |
+| 4 | Boot manager code and boot attempts |
+| 7 | Secure Boot policy (PK/KEK/db/dbx + the db entry used to authorize each loaded image) |
 | 8-15 | OS/application measurements |
 
 
