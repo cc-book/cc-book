@@ -12,3 +12,6 @@ wheels/
 # MyST build outputs
 _build
 book/_build
+
+# Node modules
+node_modules/
