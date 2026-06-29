@@ -150,3 +150,5 @@ Confidential Computing dramatically reduces the TCB. The hypervisor and host OS 
 :alt: TCB reduction with Confidential Computing
 :align: center
 ```
+
+The next section shows how each TEE vendor — AMD SEV-SNP, Intel TDX, and Intel SGX — implements these concepts in practice, and how choices like vTPM placement affect what remains in the TCB.
