@@ -9,7 +9,9 @@ CHAPTERS_DIR = BOOK_DIR / "chapters"
 
 SITE_URL = "https://cc-book.github.io/cc-book"
 
-# TOC in reading order — matches myst.yml
+# TOC in reading order — mostly matches myst.yml but intentionally diverges:
+# Conclusion, Glossary, and References are excluded because they contain no
+# substantive technical content needed by LLMs parsing the book.
 TOC = [
     ("intro",              BOOK_DIR / "intro.md",                       "Introduction"),
     ("trust-boundary",     CHAPTERS_DIR / "01_trust_boundary.md",       "The Trust Boundary Problem"),
