@@ -26,7 +26,6 @@ project:
     - title: Use Cases
       file: chapters/03_use_cases.md
     - title: Building Blocks
-      file: chapters/04_building_blocks.md
       children:
         - title: Concepts
           file: chapters/04a_concepts.md
