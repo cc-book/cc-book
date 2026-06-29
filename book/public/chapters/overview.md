@@ -37,7 +37,7 @@ When you run a workload in an infrastructure managed by an external entity, you 
 :align: center
 ```
 
-***Confidential Computing is one of the key PET technology.***
+***Confidential Computing is one of the key PET technologies.***
 
 ## Confidential Computing Definition
 
