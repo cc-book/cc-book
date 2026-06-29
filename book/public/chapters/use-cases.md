@@ -46,7 +46,7 @@ This is subtly different from secure inference — here the model is known/publi
 
 - Multiple data owners want to collaborate on shared analytics (e.g., fraud detection across banks) without any owner seeing the others' raw data.
 
-**Relevant patterrns:**
+**Relevant patterns:**
 
 - Fraud detection across financial institutions
 - Healthcare research across hospital networks
