@@ -129,4 +129,4 @@ Here is the flow of a passport check model:
 - **Freshness:** Always use nonces in attestation to prevent replay attacks.
 - **Revocation:** If a CPU is found vulnerable, AMD/Intel can revoke VCEK/PCK certificates. Verifiers should check revocation lists.
 - **Reference Value Management:** Keeping reference values (golden measurements) up to date as software is patched is an ongoing operational challenge.
-- **Third-Party Trust:** When using cloud-provided attestation services, you trust the cloud provider's attestation infrastructure. Self-hosted Trustee eliminates this dependency.
+- **Third-Party Trust:** When using cloud-provided attestation services, you trust the cloud provider's attestation infrastructure. Self-hosted Trustee eliminates this dependency. Trustee is covered in detail in Chapter 11, along with its integration into the CoCo attestation flow.
