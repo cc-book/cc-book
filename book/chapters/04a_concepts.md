@@ -55,6 +55,10 @@ New_PCR_Value = SHA256(Old_PCR_Value || New_Measurement)
 
 The **Trusted Computing Base** is the set of all hardware, firmware, and software components that you *must trust* for your system's security to hold. In a traditional cloud VM, this includes the hypervisor and host OS — both controlled by the cloud provider.
 
+:::{note}
+**KVM collapses the two:** With KVM, the hypervisor is a kernel module inside the host OS. Compromising the host OS also compromises KVM, and vice versa. Throughout this book "host OS + hypervisor" should be read as a single trust domain for KVM-based hypervisor.
+:::
+
 ```{figure} ../images/page_15.png
 :alt: Trusted Computing Base in a traditional VM
 :align: center

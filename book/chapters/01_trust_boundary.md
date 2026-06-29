@@ -19,6 +19,11 @@ The tenant trust boundary sits *above* the hypervisor. Everything below it belon
 :align: center
 ```
 
+:::{note}
+**KVM blurs the host OS / hypervisor line:** With KVM, the hypervisor is a kernel module running inside the host OS. The host OS *is* the hypervisor.
+They form a single trust domain, not two separate layers. The book lists them separately for conceptual clarity.
+:::
+
 ---
 
 ## Why Existing Mitigations Fall Short
