@@ -5,7 +5,7 @@ A **Confidential Virtual Machine (CVM)** is a virtual machine that runs inside a
 CVMs impose the least restrictions of any CC deployment model: existing applications run **unmodified** inside a CVM, with no code changes required.
 
 ```{figure} ../images/cvm.png
-:alt: Remote Attestation — IETF RATS
+:alt: Confidential Virtual Machine architecture
 :align: center
 ```
 
