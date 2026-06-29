@@ -129,7 +129,7 @@ A cloud provider employee with hypervisor access, whether acting maliciously, un
 A co-tenant VM running on the same physical host can leak secrets from another VM without any hypervisor access, by exploiting **shared hardware resources**:
 
 **CPU Cache Timing (Spectre/Meltdown family)**
-Modern CPUs share L1/L2/L3 caches across logical cores. A malicious co-tenant can measure cache access times to infer which memory addresses a victim VM is accessing — and from that, reconstruct cryptographic keys or sensitive data patterns.
+Modern CPUs share the Last-Level Cache (LLC, typically L3) across physical cores, with L1 and L2 per-core. SMT siblings on the same core share L1/L2, but cross-VM co-tenant attacks primarily exploit the shared LLC. A malicious co-tenant can measure cache access times to infer which memory addresses a victim VM is accessing — and from that, reconstruct cryptographic keys or sensitive data patterns.
 
 - **Spectre** (CVE-2017-5753, CVE-2017-5715) — exploits speculative execution to read across privilege boundaries
 - **Meltdown** (CVE-2017-5754) — allows user-space code to read kernel memory; patched in software but with performance cost
