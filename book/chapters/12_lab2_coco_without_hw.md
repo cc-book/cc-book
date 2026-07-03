@@ -196,7 +196,8 @@ The Attestation Agent inside the Kata VM needs to know the KBS URL. Pass it via 
 
 ```{code-block} yaml
 :caption: coco-secret-pod.yaml
-cat > coco-secret-pod.yaml << 'EOF'
+# Unquoted EOF so ${KBS_URL} is expanded into the manifest
+cat > coco-secret-pod.yaml << EOF
 apiVersion: v1
 kind: Pod
 metadata:
