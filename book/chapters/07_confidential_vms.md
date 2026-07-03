@@ -186,6 +186,31 @@ All major CPU vendors support CVMs.
 
 ---
 
+## Performance and Operational Considerations
+
+A common first question: *what does the encryption cost?* The honest answer is "usually little, but it depends on the workload", and the overhead is rarely where people expect it.
+
+### Runtime overhead
+
+- **CPU- and memory-bound workloads** typically see **low single-digit percentage** overhead. Memory encryption is performed by dedicated hardware in the memory controller and is not the bottleneck.
+- **I/O-heavy workloads pay more.** Devices cannot DMA directly into the guest's private (encrypted) memory, so every network packet and disk block crosses the boundary through **bounce buffers** (shared, unencrypted pages managed via `swiotlb` in Linux). This adds a memory copy and CPU cost per I/O operation. Network- or storage-intensive workloads can see noticeably higher overhead and increased CPU utilization per unit of throughput.
+- **VM exits are more expensive.** Context switches between guest and host involve additional hardware state protection (especially on SEV-SNP with register state encryption), so exit-heavy workloads (frequent interrupts, timer-heavy applications) are disproportionately affected.
+
+Always benchmark *your* workload; published numbers vary widely with kernel version, I/O pattern, and hardware generation.
+
+### Boot and startup latency
+
+- Guest memory must be validated/accepted before use. Large-memory CVMs use **lazy memory acceptance** to avoid multi-second boot delays; fully pre-accepting memory at launch is slower but avoids runtime acceptance hiccups.
+- Attestation adds a network round-trip (to a verifier and/or certificate service) before secrets are released; plan for this in autoscaling paths.
+
+### Operational restrictions
+
+- **Memory cannot be overcommitted or swapped by the host**: guest memory is pinned. Capacity planning is stricter than for regular VMs.
+- **Live migration is limited or unavailable** depending on the platform and cloud, so host maintenance may mean a stop/restart instead of a transparent migration.
+- **Snapshots and hibernation of guest state are generally unsupported**: this is by design, since exporting encrypted guest state would undermine the threat model.
+
+---
+
 ## CVMs as the Foundation for CoCo
 
 CVMs are **Pillar 1** of the Confidential Computing stack. The CNCF Confidential Containers (CoCo) project builds directly on CVMs:
