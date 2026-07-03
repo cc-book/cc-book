@@ -126,9 +126,38 @@ Here is the flow of a passport check model:
 
 ---
 
+## Attestation Operations in Practice
+
+The mechanics above are the easy part. The recurring operational work in production attestation is managing *reference values* and *policy* over time.
+
+### Where reference values come from
+
+A verifier needs "golden" measurements to compare Evidence against. In practice they come from three sources:
+
+1. **Vendor-published values**: firmware vendors and OS publishers can publish expected measurements for their releases.
+2. **Computed from the image**: tools compute the expected launch measurement directly from the artifacts you deploy. For example, [sev-snp-measure](https://github.com/virtee/sev-snp-measure) derives the SNP launch measurement from a given OVMF binary, kernel, initrd, and command line. This is the most common approach for custom guest images.
+3. **Reproducible builds**: if the guest image builds reproducibly, anyone can independently rebuild it and confirm the measurement, removing the need to trust the image publisher's claim.
+
+### Measurement churn
+
+Every update to a measured component (firmware, kernel, initramfs, kernel command line, agent policy) changes the measurements. That means:
+
+- **Patching is an attestation event.** A routine kernel security update will cause attestation failures unless the new reference values are provisioned to the verifier *before* the updated guests boot.
+- **Rollouts need overlapping trust windows.** During a fleet upgrade, the verifier must accept both the old and new measurements; the old values are retired once the rollout completes.
+- **Automate the pipeline.** Mature deployments generate reference values in CI as part of the image build and push them to the verifier (e.g., Trustee's RVPS) in the same pipeline that publishes the image.
+
+### TCB versioning and recovery
+
+Hardware vendors patch their own platform security (microcode, SNP firmware, the TDX module). The platform's **TCB version** is reported inside the Evidence, and the signing key itself is bound to it (AMD's VCEK is derived per TCB version). Verifier policy should enforce a *minimum* TCB version. This is how the ecosystem recovers from hardware vulnerabilities: the vendor ships fixed firmware, and verifiers raise the required TCB floor, causing unpatched hosts to fail attestation. A host that lags on firmware updates will (correctly) stop receiving secrets.
+
+### Policy, not just matching
+
+Real verifiers don't hard-compare every field. They evaluate Evidence against a **policy** (Trustee's Attestation Service uses [OPA](https://www.openpolicyagent.org/) Rego policies) that decides *which* claims matter: exact launch measurement pinning, minimum TCB version, allowed hardware models, debug-mode disallowed, and so on. Looser policies ease operations; tighter policies narrow the attack surface. Chapter 11 shows where these policies live in Trustee.
+
+---
+
 ## Security Considerations
 
 - **Freshness:** Always use nonces in attestation to prevent replay attacks.
 - **Revocation:** If a CPU is found vulnerable, AMD/Intel can revoke VCEK/PCK certificates. Verifiers should check revocation lists.
-- **Reference Value Management:** Keeping reference values (golden measurements) up to date as software is patched is an ongoing operational challenge.
 - **Third-Party Trust:** When using cloud-provided attestation services, you trust the cloud provider's attestation infrastructure. Self-hosted Trustee eliminates this dependency. Trustee is covered in detail in Chapter 11, along with its integration into the CoCo attestation flow.
