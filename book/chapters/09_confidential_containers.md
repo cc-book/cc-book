@@ -38,7 +38,7 @@ CoCo **protects the workload from the host**.
 
 ## Architecture: CoCo/bare-metal (Local Hypervisor)
 
-The Confidential VM (CVM) runs on the worker node. Inside the CVM: kata-agent manages the lifecycle of the pod (containers), image-rs (part of kata-agent) downloads the container images, the Confidential Data Hub (CDH) serves as the secret retrieval proxy, and the Attestation Agent (AA) handles the attestation process. Container images are always downloaded inside the CVM, never on the host.
+The Confidential VM (CVM) runs on the worker node. Inside the CVM: kata-agent manages the lifecycle of the pod (containers), image-rs (the container image management library from guest-components, linked into kata-agent) downloads the container images, the Confidential Data Hub (CDH) serves as the secret retrieval proxy, and the Attestation Agent (AA) handles the attestation process. Container images are always downloaded inside the CVM, never on the host.
 
 ```{figure} ../images/page_59.png
 :alt: High Level Architecture — CoCo/bare-metal
