@@ -131,6 +131,7 @@ Regulations increasingly require that data be protected from *infrastructure ope
 | **PCI-DSS** | Global | Cardholder data must be protected at all times | "In use" is an unprotected state in traditional VMs |
 | **FedRAMP / IL4/IL5** | US Federal | US government data must not be accessible to CSP staff | Structural impossibility without hardware isolation |
 | **DORA** | EU | ICT risk management must address third-party service provider access | Cloud infrastructure access breaks the ICT supply chain trust requirements |
+| **NIS2** | EU | Cybersecurity risk management for essential/important entities, including supply chain security | The cloud provider's privileged access to workloads is itself a supply-chain risk that must be managed |
 
 Confidential Computing is increasingly cited by compliance frameworks as the mechanism to satisfy these "data in use" requirements.
 
