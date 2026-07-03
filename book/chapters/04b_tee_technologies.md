@@ -158,4 +158,26 @@ Because PCK certificate retrieval from Intel PCS requires platform registration 
 | **Hypervisor in TCB** | Optional* | Optional* | N/A |
 | **Available on cloud** | AWS, Azure, GCP, IBM Cloud | Azure, GCP, IBM Cloud | Azure, IBM Cloud, Alibaba Cloud |
 
-\* Depends on where the vTPM is placed — see [TCB Configurations for VM TEEs](#tcb-configurations-for-vm-tees) at the top of this section.
+\* Depends on where the vTPM is placed; see [TCB Configurations for VM TEEs](#tcb-configurations-for-vm-tees) at the top of this section.
+
+:::{note}
+**Intel SGX is deliberately out of scope for this book.** SGX is a process-based TEE requiring applications to be split into trusted and untrusted components, a different programming model from the VM-based TEEs this book focuses on. For a deep treatment, see [Intel SGX Explained (Costan & Devadas)](https://eprint.iacr.org/2016/086.pdf) and Intel's SGX developer documentation.
+:::
+
+---
+
+## Other TEE Architectures
+
+Beyond AMD and Intel on x86, VM-based TEEs exist or are emerging on every major CPU architecture. This book's concepts (measured launch, hardware-signed evidence, a vendor certificate chain) carry over directly; only the component names change.
+
+### Arm CCA
+
+**Arm Confidential Compute Architecture (CCA)**, part of Armv9-A, introduces **Realms**: VM-based TEEs whose memory and register state are inaccessible to the hypervisor and to Arm TrustZone's Secure world. Realms are managed by a small, verifiable firmware component called the **Realm Management Monitor (RMM)**, the architectural analogue of the Intel TDX module. Attestation follows the same pattern as SNP/TDX: the hardware produces a signed **CCA attestation token** covering the Realm's initial measurement, rooted in device keys provisioned by the manufacturer. As of this writing, CCA-capable server hardware is still reaching the market, but the software stack (Linux, KVM, kvmtool/QEMU, Trustee support) is being developed in the open.
+
+### RISC-V CoVE
+
+**CoVE (Confidential VM Extensions)** is the RISC-V specification for VM-based TEEs. It defines **TEE Virtual Machines (TVMs)** managed by a **TEE Security Manager (TSM)** running in a higher privilege level than the hypervisor, again mirroring the TDX module / RMM pattern. CoVE is a specification with reference implementations rather than shipping silicon; it matters because it extends the CC programming and attestation model to an open ISA.
+
+### IBM Z and LinuxONE: Secure Execution
+
+**IBM Secure Execution (SE)** protects KVM guests on IBM Z and LinuxONE using a firmware **ultravisor**. Its trust model differs from SNP/TDX in an instructive way: the guest image is *encrypted at build time* against a host-specific public key, so trust is established by image preparation rather than by comparing runtime measurements, though SE also supports attestation and is integrated with CoCo and Trustee. IBM Power offers a similar capability, the **Protected Execution Facility (PEF)**.
