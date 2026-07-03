@@ -93,7 +93,7 @@ A co-tenant VM running on the same physical host can leak secrets from another V
 Modern CPUs share the Last-Level Cache (LLC, typically L3) across physical cores, with L1 and L2 per-core. SMT siblings on the same core share L1/L2, but cross-VM co-tenant attacks primarily exploit the shared LLC. A malicious co-tenant can measure cache access times to infer which memory addresses a victim VM is accessing — and from that, reconstruct cryptographic keys or sensitive data patterns.
 
 - **Spectre** (CVE-2017-5753, CVE-2017-5715) — exploits speculative execution to read across privilege boundaries
-- **Meltdown** (CVE-2017-5754) — allows user-space code to read kernel memory; patched in software but with performance cost
+- **Meltdown** (CVE-2017-5754) — allows user-space code to read kernel memory within the same OS; not itself a cross-VM attack, but it demonstrated the transient-execution class of leaks; patched in software but with performance cost
 - **Flush+Reload, Prime+Probe, Evict+Time** — cache side-channel techniques requiring only shared LLC (Last-Level Cache)
 
 **DRAM Rowhammer**
