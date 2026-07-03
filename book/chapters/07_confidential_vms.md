@@ -152,7 +152,7 @@ sequenceDiagram
 
 ## Hardware Technologies
 
-All major CPU vendors supports CVMs.
+All major CPU vendors support CVMs.
 
 | Vendor | Technology|
 |---|---|
@@ -164,6 +164,10 @@ All major CPU vendors supports CVMs.
 | **IBM Power** | Protected Execution Facility (PEF) |
 | **ARM** | CCA (Confidential Compute Architecture) |
 | **RISC-V** | CoVE (Confidential VM Extensions) |
+
+:::{note}
+**SEV, SEV-ES, and SEV-SNP are successive generations, not alternatives.** Plain SEV encrypts guest memory only; SEV-ES additionally protects CPU register state on VM exits; SEV-SNP adds memory integrity protection (the Reverse Map Table) and a hardware-signed attestation report. Only SEV-SNP provides the full confidentiality, integrity, and attestation guarantees this book assumes. SEV and SEV-ES appear here for completeness and should not be used for new deployments.
+:::
 
 ---
 
