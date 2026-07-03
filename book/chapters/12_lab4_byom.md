@@ -246,7 +246,8 @@ Deploy the peerpods chart (version 0.3.0 ships with CAA v0.21.0). This chart ins
 
 ```{code-block} yaml
 :caption: byom-values.yaml
-cat > byom-values.yaml << 'EOF'
+# Unquoted EOF so ${CVM_PRIVATE_IP} is expanded into the values file
+cat > byom-values.yaml << EOF
 provider: byom
 
 image:
