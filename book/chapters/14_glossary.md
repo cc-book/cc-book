@@ -10,22 +10,32 @@ Acronyms and key terms used throughout this book, listed alphabetically.
 | **ASK** | AMD SEV Key | Intermediate key in AMD's certificate chain, signed by the ARK and used to sign the VCEK |
 | **BYOM** | Bring Your Own Machine | Deployment model where the user supplies their own (remote) machine as the CVM host |
 | **CAA** | Cloud API Adaptor | CoCo component that provisions peer-pod CVMs via cloud provider APIs |
+| **CCA** | Confidential Compute Architecture | Arm's VM-based TEE architecture (Armv9), introducing Realms managed by the Realm Management Monitor |
 | **CDH** | Confidential Data Hub | CoCo component inside the CVM that acts as a proxy for secret retrieval |
 | **CNI** | Container Network Interface | Standard interface for Kubernetes pod networking plugins (e.g. Flannel, Calico) |
 | **CoCo** | Confidential Containers | CNCF project for running Kubernetes pods inside CVMs using Kata Containers |
+| **CoVE** | Confidential VM Extensions | RISC-V specification for VM-based TEEs |
 | **CVM** | Confidential Virtual Machine | A virtual machine running inside a TEE, with hardware-encrypted memory |
 | **CDI** | Container Device Interface | Standard for exposing hardware devices to containers |
 | **DICE** | Device Identifier Composition Engine | Hardware RoT standard for deriving layered identity keys at each boot stage |
 | **DMA** | Direct Memory Access | Hardware mechanism allowing devices to access system memory without CPU involvement; a source of side-channel risk |
+| **FHE** | Fully Homomorphic Encryption | Cryptographic technique for computing directly on encrypted data without decrypting it |
 | **GHCR** | GitHub Container Registry | GitHub's OCI-compatible container and artifact registry (ghcr.io) |
 | **GRUB** | Grand Unified Bootloader | Common Linux bootloader responsible for loading the kernel |
 | **IETF** | Internet Engineering Task Force | Standards body that publishes internet and security protocol specifications (RFCs) |
+| **initdata** | Initialization Data | Mechanism for passing measured configuration (KBS URL, agent policy) into a CoCo CVM at boot; its hash is bound into the attestation evidence |
+| **ITA** | Intel Trust Authority | Intel's hosted attestation verification service for TDX and SGX |
 | **KBS** | Key Broker Service | Trustee component that releases secrets (keys, certificates) only after successful attestation |
 | **KDS** | Key Distribution Service | AMD's public service for distributing VCEK certificates by chip ID and TCB version |
 | **KVM** | Kernel-based Virtual Machine | Linux kernel hypervisor module used by QEMU to run VMs |
 | **LLC** | Last-Level Cache | The largest shared CPU cache (typically L3); a surface for cache side-channel attacks |
 | **LUKS** | Linux Unified Key Setup | Standard disk encryption specification on Linux, used to protect ephemeral CVM storage |
+| **MAA** | Microsoft Azure Attestation | Azure's attestation verification service for SEV-SNP, TDX, and SGX |
+| **MPC** | Secure Multi-Party Computation | Cryptographic protocols that let multiple parties jointly compute a function without revealing their private inputs |
+| **MRTD** | Measurement Register for Trust Domain | Intel TDX build-time measurement register covering the initial TD contents (e.g. the TDVF firmware) |
+| **NRAS** | NVIDIA Remote Attestation Service | NVIDIA's hosted service for verifying GPU attestation evidence |
 | **NSG** | Network Security Group | Cloud firewall construct (e.g. Azure) controlling inbound/outbound traffic to VMs |
+| **Nydus** | — | containerd snapshotter (nydus-snapshotter) used by CoCo to delegate container image pulling to the guest CVM |
 | **OCI** | Open Container Initiative | Standards body defining container image and runtime specifications |
 | **OPA** | Open Policy Agent | General-purpose policy engine; used in CoCo to enforce initdata policies |
 | **ORAS** | OCI Registry As Storage | Tool for pushing and pulling arbitrary artifacts (binaries, configs) from OCI registries |
@@ -35,6 +45,7 @@ Acronyms and key terms used throughout this book, listed alphabetically.
 | **PCCS** | Provisioning Certificate Caching Service | Local caching proxy for Intel PCS certificates, reducing latency in production deployments |
 | **PCR** | Platform Configuration Register | Tamper-evident register inside a TPM that accumulates boot measurements via hash extension |
 | **PCS** | Provisioning Certification Service | Intel's public service for distributing PCK certificates for TDX and SGX platforms |
+| **Peer pods** | — | CoCo deployment model where the pod CVM runs on a remote hypervisor (provisioned via cloud APIs by CAA) instead of nested on the worker node |
 | **PSP** | Platform Security Processor | Alternative name for AMD's dedicated security processor (also called ASP) |
 | **QE** | Quoting Enclave | Intel SGX/TDX enclave that signs attestation quotes using a platform attestation key |
 | **QEMU** | Quick EMUlator | Open-source machine emulator and virtualizer; used with KVM to run CVMs |
@@ -55,6 +66,7 @@ Acronyms and key terms used throughout this book, listed alphabetically.
 | **SVSM** | Secure VM Service Module | Software component that runs inside a TEE and provides hypervisor-like services (e.g. vTPM) without trusting the hypervisor |
 | **TCB** | Trusted Computing Base | The minimal set of hardware, firmware, and software components that must be trusted for security to hold |
 | **TCG** | Trusted Computing Group | Industry consortium that defines TPM and related trusted computing standards |
+| **TDVF** | TDX Virtual Firmware | OVMF-based guest firmware for Intel TDX Trust Domains |
 | **TDX** | Trust Domain Extensions | Intel's VM-based TEE technology that protects entire VMs (Trust Domains) from the hypervisor |
 | **TEE** | Trusted Execution Environment | Hardware-enforced isolated region of a processor protecting code and data from privileged software |
 | **TPM** | Trusted Platform Module | Hardware chip (or firmware equivalent) for secure key storage, measurement, and attestation |
