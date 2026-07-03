@@ -9,7 +9,7 @@ This lab runs a Kubernetes cluster on a standard VM and connects it to an Azure 
 
 ```{admonition} BYOM images are not in the release artifacts
 :class: note
-The CAA v0.21.0 release does not publish pre-built BYOM images. This lab includes a one-time build step to compile the BYOM binaries from source and push them to a container registry you control. The build takes roughly 2–3 hours on a 4-vCPU VM; plan accordingly or run it in a background session.
+The CAA v0.21.0 release does not publish pre-built BYOM images. This lab uses pre-built images from the author's registry (`quay.io/bpradipt`). If you prefer to build them yourself, the `podvm-byom-binaries` and CAA images can be built from the [cloud-api-adaptor](https://github.com/confidential-containers/cloud-api-adaptor) source at tag `v0.21.0` and pushed to a registry you control (budget roughly 2–3 hours on a 4-vCPU VM), then substitute your image references in Steps 5 and 7.
 ```
 
 The lab uses two Azure VMs in the same VNet:
@@ -23,7 +23,7 @@ The lab uses two Azure VMs in the same VNet:
 
 - Azure subscription with quota for **DCasv5-series** (CVM) and **D4s_v3** in East US or West Europe
 - Azure CLI installed and authenticated (`az login`)
-- A container registry you can push to (Docker Hub, quay.io, GitHub Container Registry, or ACR)
+- (Optional) A container registry you can push to, only needed if you build the BYOM images yourself instead of using the pre-built ones
 
 ## Estimated Cost
 
