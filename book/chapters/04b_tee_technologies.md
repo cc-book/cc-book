@@ -156,4 +156,4 @@ Because PCK certificate retrieval from Intel PCS requires platform registration 
 | **Granularity** | Full VM | Full VM | Enclave (subset of process) |
 | **App changes needed** | None | None | Yes (trust/untrust split) |
 | **Hypervisor in TCB** | Optional | Optional | N/A |
-| **Available on cloud** | AWS, GCP, Azure | Azure, GCP | AWS, Azure, GCP |
+| **Available on cloud** | AWS, Azure, GCP, IBM Cloud | Azure, GCP, IBM Cloud | Azure, IBM Cloud, Alibaba Cloud |
