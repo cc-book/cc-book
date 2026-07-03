@@ -86,7 +86,7 @@ Confidential Computing solves the problem of securing remote computation — exe
 This shifts the trust requirement: instead of trusting the infrastructure operator's policies and personnel, you trust the hardware itself. **A cloud provider's software stack — including privileged administrators — cannot access your data in use, and you can verify this cryptographically.**
 
 :::{note}
-This guarantee applies to *software-layer* attackers. CC's threat model still assumes physical infrastructure security — attacks requiring physical hardware access (such as memory bus interposition) are out of scope. These limits are covered in the Trust Boundary chapter.
+This guarantee applies to *software-layer* attackers. CC's threat model still assumes physical infrastructure security — attacks requiring physical hardware access (such as memory bus interposition) are out of scope. These limits are covered in [Known Attacks Against Confidential Computing](05a_known_attacks.md).
 :::
 
 ```{figure} ../images/page_05.png

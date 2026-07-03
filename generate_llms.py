@@ -21,6 +21,7 @@ TOC = [
     ("concepts",           CHAPTERS_DIR / "04a_concepts.md",            "Concepts"),
     ("tee-technologies",   CHAPTERS_DIR / "04b_tee_technologies.md",    "TEE Technologies"),
     ("remote-attestation", CHAPTERS_DIR / "05_remote_attestation.md",   "Remote Attestation"),
+    ("known-attacks",      CHAPTERS_DIR / "05a_known_attacks.md",       "Known Attacks Against Confidential Computing"),
     ("three-pillars",      CHAPTERS_DIR / "06_three_pillars.md",        "Three Pillars of Confidential Computing"),
     ("confidential-vms",   CHAPTERS_DIR / "07_confidential_vms.md",     "Confidential Virtual Machine (CVM)"),
     ("confidential-containers", CHAPTERS_DIR / "09_confidential_containers.md", "Confidential Containers (CoCo)"),

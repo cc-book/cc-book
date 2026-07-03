@@ -34,6 +34,8 @@ project:
           file: chapters/04b_tee_technologies.md
         - title: Remote Attestation
           file: chapters/05_remote_attestation.md
+        - title: Known Attacks Against Confidential Computing
+          file: chapters/05a_known_attacks.md
     - title: Three Pillars of Confidential Computing
       file: chapters/06_three_pillars.md
       children:
