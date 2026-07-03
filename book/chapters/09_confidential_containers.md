@@ -61,7 +61,7 @@ The Confidential VM runs external to the worker node. The worker node hosts only
 
 ## CoCo Threat Model
 
-The untrusted components include the host OS, hypervisor, cloud provider software, other VMs on the same host, other processes on the worker node, and the Kubernetes control plane (kubelet, etcd, API server).
+The untrusted components include the host OS, hypervisor, cloud provider software, other VMs on the same host, other processes on the worker node, the Kubernetes control plane (API server, etcd, scheduler), and the node agents (kubelet, containerd/CRI-O).
 
 Application code vulnerabilities, availability attacks, and physical attacks are out of scope.
 
