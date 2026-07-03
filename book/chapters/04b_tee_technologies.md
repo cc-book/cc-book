@@ -4,6 +4,7 @@ This section covers how the major TEE implementations — AMD SEV-SNP, Intel TDX
 
 ---
 
+(tcb-configurations-for-vm-tees)=
 ## TCB Configurations for VM TEEs
 
 The placement of the vTPM relative to the TEE boundary has a direct impact on what ends up in the Trusted Computing Base.
