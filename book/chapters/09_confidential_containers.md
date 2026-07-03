@@ -76,7 +76,7 @@ Attestation in CoCo happens *lazily* — only when an operation first depends on
 - Before container startup (e.g., to retrieve an image decryption key or a sealed secret)
 - Or later in the workload lifecycle
 
-If a workload requires no resources, it won't be attested — which would make it insecure by design. Conversely, successfully receiving a resource (especially a secret known only to Trustee) implies attestation has already occurred.
+A consequence of lazy attestation: a workload that never requests a resource is never attested. A running pod is not, by itself, proof that attestation happened. Conversely, successfully receiving a resource (especially a secret known only to Trustee) implies attestation has already occurred. If you need a hard guarantee that a workload attested before starting, gate startup on a secret retrieval (for example, via an init container that fetches a resource from Trustee).
 
 ---
 
