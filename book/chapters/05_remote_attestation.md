@@ -45,17 +45,19 @@ Remote attestation answers all three questions cryptographically.
 
 The industry has standardized remote attestation procedures through the **IETF RATS (Remote ATtestation procedureS)** framework ([RFC 9334](https://www.rfc-editor.org/rfc/rfc9334)).
 
-The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verifier* checks against *Reference Values* from the Reference Value Provider Service (RVPS). The *Verifier* returns an Attestation Result to the *Relying Party*, which then decides whether to release a resource (e.g., a decryption key).
+The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verifier* checks against *Reference Values* from a Reference Value Provider. The *Verifier* returns an Attestation Result to the *Relying Party*, which then decides whether to release a resource (e.g., a decryption key).
 
-### Key Roles
+### Key Roles and Artifacts
 
-| Role | Description | Example |
+| Role / Artifact | Description | Example |
 |---|---|---|
-| **Attester** | The entity being attested — generates evidence about itself | The TEE (CVM) |
-| **Evidence** | Claims produced by the Attester, containing measurements | Attestation report with PCR/RTMR values |
-| **Verifier** | Validates evidence against reference values | Attestation Service (AS) |
-| **Reference Value Provider (RVPS)** | Supplies the "golden" reference measurements | Firmware vendor, OS publisher |
-| **Relying Party** | Uses the attestation result to make decisions | Application owner, Resource gatekeeper |
+| **Attester** (role) | The entity being attested — generates evidence about itself | The TEE (CVM) |
+| **Evidence** (artifact) | Claims produced by the Attester, containing measurements | Attestation report with PCR/RTMR values |
+| **Verifier** (role) | Validates evidence against reference values | Attestation Service (AS) |
+| **Reference Value Provider** (role) | Supplies the "golden" reference measurements | Firmware vendor, OS publisher |
+| **Relying Party** (role) | Uses the attestation result to make decisions | Application owner, Resource gatekeeper |
+
+Trustee (Chapter 11) implements the Reference Value Provider role as a component called the **Reference Value Provider Service (RVPS)**. That name is Trustee-specific, not an IETF term.
 
 :::{note}
 **Evidence vs attestation report — terminology clarification**
