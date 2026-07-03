@@ -155,5 +155,7 @@ Because PCK certificate retrieval from Intel PCS requires platform registration 
 | **Type** | VM-based | VM-based | Process-based |
 | **Granularity** | Full VM | Full VM | Enclave (subset of process) |
 | **App changes needed** | None | None | Yes (trust/untrust split) |
-| **Hypervisor in TCB** | Optional | Optional | N/A |
+| **Hypervisor in TCB** | Optional* | Optional* | N/A |
 | **Available on cloud** | AWS, Azure, GCP, IBM Cloud | Azure, GCP, IBM Cloud | Azure, IBM Cloud, Alibaba Cloud |
+
+\* Depends on where the vTPM is placed — see [TCB Configurations for VM TEEs](#tcb-configurations-for-vm-tees) at the top of this section.
