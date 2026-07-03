@@ -24,6 +24,7 @@ TOC = [
     ("confidential-containers", CHAPTERS_DIR / "09_confidential_containers.md", "Confidential Containers (CoCo)"),
     ("confidential-clusters", CHAPTERS_DIR / "10_confidential_clusters.md", "Confidential Cluster"),
     ("trustee",            CHAPTERS_DIR / "11_trustee.md",              "Trustee"),
+    ("gpu-devices",        CHAPTERS_DIR / "11a_gpu_cc.md",              "Confidential Computing for GPUs and Devices"),
     ("labs",               CHAPTERS_DIR / "12_labs.md",                 "Hands-On Labs"),
     ("lab1-cvm-attestation", CHAPTERS_DIR / "12_lab1_cvm_attestation.md", "Lab 1: CVM Attestation on Azure"),
     ("lab2-coco-without-hw", CHAPTERS_DIR / "12_lab2_coco_without_hw.md", "Lab 2: CoCo Without Confidential Hardware"),

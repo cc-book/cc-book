@@ -45,6 +45,8 @@ project:
           file: chapters/10_confidential_clusters.md
     - title: Trustee
       file: chapters/11_trustee.md
+    - title: Confidential Computing for GPUs and Devices
+      file: chapters/11a_gpu_cc.md
     - title: Hands-On Labs
       file: chapters/12_labs.md
       children:

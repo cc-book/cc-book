@@ -66,6 +66,7 @@ Acronyms and key terms used throughout this book, listed alphabetically.
 | **SVSM** | Secure VM Service Module | Software component that runs inside a TEE and provides hypervisor-like services (e.g. vTPM) without trusting the hypervisor |
 | **TCB** | Trusted Computing Base | The minimal set of hardware, firmware, and software components that must be trusted for security to hold |
 | **TCG** | Trusted Computing Group | Industry consortium that defines TPM and related trusted computing standards |
+| **TDISP** | TEE Device Interface Security Protocol | PCIe standard for attesting a device and admitting it into a VM-based TEE for direct DMA (trusted I/O) |
 | **TDVF** | TDX Virtual Firmware | OVMF-based guest firmware for Intel TDX Trust Domains |
 | **TDX** | Trust Domain Extensions | Intel's VM-based TEE technology that protects entire VMs (Trust Domains) from the hypervisor |
 | **TEE** | Trusted Execution Environment | Hardware-enforced isolated region of a processor protecting code and data from privileged software |
