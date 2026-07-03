@@ -20,6 +20,28 @@ CoCo provides two deployment approaches:
 
 ---
 
+## Kata Containers Primer
+
+CoCo is built on [Kata Containers](https://katacontainers.io/), so a working picture of Kata is essential before the rest of this chapter. If you already run Kata, skip ahead.
+
+**The core idea:** Kata is an OCI-compatible container runtime that runs each Kubernetes pod inside its own **lightweight virtual machine** instead of a shared-kernel namespace sandbox. The workload gets a dedicated guest kernel, so a container escape ends inside the VM, not on the node.
+
+**How a Kata pod starts:**
+
+1. A pod's `runtimeClassName: kata` routes the CRI request from containerd/CRI-O to the Kata **shim** (`containerd-shim-kata-v2`) instead of the default runc handler.
+2. The shim launches a hypervisor (QEMU, Cloud Hypervisor, or Firecracker) that boots a minimal VM: a stripped-down guest kernel and a small rootfs image containing the **kata-agent**.
+3. The shim talks to kata-agent over a **vsock** channel (a host-to-guest socket that needs no networking). The agent creates and manages the pod's containers inside the VM.
+4. To Kubernetes, none of this is visible: the kubelet sees an ordinary pod. One pod = one VM; all containers of that pod share the same guest.
+
+Two properties of this architecture matter for everything that follows:
+
+- **The VM boundary is a natural TEE boundary.** Because the pod already lives in a VM, swapping that VM for a *confidential* VM (SEV-SNP, TDX) is an evolution of the architecture, not a redesign.
+- **kata-agent is the control plane's only door into the guest.** Every operation Kubernetes performs on the pod (start container, exec, resize) arrives as an agent API request, a single choke point where CoCo later attaches policy enforcement.
+
+For the full architecture, see the [Kata Containers documentation](https://github.com/kata-containers/kata-containers/tree/main/docs).
+
+---
+
 ## From Kata to CoCo: The Key Difference
 
 Kata Containers **protects the host from the workload**.
