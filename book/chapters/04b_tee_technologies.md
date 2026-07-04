@@ -125,11 +125,6 @@ Because PCK certificate retrieval from Intel PCS requires platform registration 
 
 ## AMD SEV-SNP vs Intel TDX — Comparison
 
-```{figure} ../images/page_30.png
-:alt: Summary — TPM vs without TPM
-:align: center
-```
-
 ### Attestation Evidence
 
 | | With TPM | Without TPM (SNP/TDX direct boot) |
