@@ -7,7 +7,7 @@ IMAGE        := cc-book
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install hooks build serve clean rebuild podman-build podman-serve
+.PHONY: help install hooks build serve clean rebuild podman-image podman-build podman-serve
 
 help:
 	@echo "Confidential Computing Jupyter Book"
@@ -19,7 +19,7 @@ help:
 	@echo "  serve         Start the live-preview server (port $(PORT))"
 	@echo "  clean         Remove build artefacts"
 	@echo "  rebuild       Clean then build"
-	@echo "  podman-build  Build the podman container image"
+	@echo "  podman-build  Run 'make build' inside podman, writing output back to this tree"
 	@echo "  podman-serve  Run the live-preview server in a rootless podman container"
 
 install: hooks
@@ -41,8 +41,15 @@ clean:
 
 rebuild: clean build
 
-podman-build:
+podman-image:
 	podman build -t $(IMAGE) -f Containerfile .
 
-podman-serve: podman-build
+# Bind-mounts the repo so 'make build' writes generate_llms.py/jupyter-book
+# output straight back to your working tree, no local uv/node install
+# required. --userns=keep-id keeps file ownership matching your host user
+# (container's "book" user is uid 1000).
+podman-build: podman-image
+	podman run --rm --userns=keep-id -v $(PWD):/home/book/app:Z -w /home/book/app $(IMAGE) make build
+
+podman-serve: podman-image
 	podman run --rm -p 127.0.0.1:$(PORT):$(PORT) -p 127.0.0.1:$(CONTENT_PORT):$(CONTENT_PORT) $(IMAGE)

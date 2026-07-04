@@ -1,7 +1,8 @@
 FROM python:3.11-slim
 
-# jupyter-book (mystmd) needs Node 18/20/22+ on PATH
-RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm \
+# jupyter-book (mystmd) needs Node 18/20/22+ on PATH; make runs the Makefile targets;
+# procps provides `ps`, which mystmd's build step shells out to.
+RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm make procps \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir uv
@@ -12,6 +13,9 @@ WORKDIR /home/book/app
 COPY --chown=book:book . .
 USER book
 
+# Keep the venv outside /home/book/app so bind-mounting the repo there
+# (for `make podman-build`) doesn't shadow it with the host's own .venv.
+ENV UV_PROJECT_ENVIRONMENT=/home/book/.venv
 RUN uv sync --frozen
 
 # 3000: book site, 3100: content/asset server (images, CSS) the page fetches from the browser
