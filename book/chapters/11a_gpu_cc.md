@@ -18,12 +18,12 @@ For the Chapter 3 AI use cases, this is exactly where the sensitive assets live.
 
 ## NVIDIA Confidential Computing (Hopper and Later)
 
-NVIDIA's H100 (Hopper) was the first GPU with a confidential computing mode; Blackwell extends it. With CC mode enabled:
+NVIDIA's H100 (Hopper) was the first GPU with a confidential computing mode; Blackwell (B200) extends it. With CC mode enabled:
 
 - **On-GPU isolation.** Hardware firewalls block access to GPU memory from outside the GPU TEE, including from the hypervisor and other GPU contexts.
 - **Encrypted transfers.** The NVIDIA driver running *inside* the CVM establishes an encrypted session with the GPU (via the SPDM protocol). DMA between the CVM and the GPU goes through encrypted bounce buffers in shared memory, so the PCIe bus and the host only see ciphertext.
-- **GPU attestation.** The GPU produces its own attestation report containing measurements of its firmware (VBIOS) and configuration, signed by device keys rooted in NVIDIA's certificate authority. Verification is done against the [NVIDIA Remote Attestation Service (NRAS)](https://docs.nvidia.com/attestation/) or a local verifier.
-- **Multi-GPU support.** NVLink traffic between GPUs in the same TEE can also be protected, enabling confidential multi-GPU training.
+- **GPU attestation.** The GPU produces its own attestation report containing measurements of its firmware (VBIOS) and configuration, signed by device keys rooted in NVIDIA's certificate authority. Verification is done against the [NVIDIA Remote Attestation Service (NRAS)](https://docs.nvidia.com/attestation/) or a local verifier. Trustee supports GPU attestation using NRAS.
+- **Multi-GPU support.** NVLink traffic between GPUs in the same TEE can also be protected, enabling confidential multi-GPU training and inference.
 
 ### Composite Attestation
 
@@ -37,7 +37,7 @@ Compute that stays on the GPU runs at essentially native speed: GPU memory bandw
 
 ## Trusted I/O: Removing the Bounce Buffers
 
-Encrypted bounce buffers are a bridge, not the destination. The PCIe **TDISP** standard (TEE Device Interface Security Protocol) defines how an attested device can be *accepted into* a VM-based TEE and then DMA directly into the guest's private memory, with no bounce buffers and no extra copies. The CPU-side implementations are **Intel TDX Connect** and **AMD SEV-TIO**; on the device side, GPUs, NICs, and storage controllers must implement TDISP.
+Encrypted bounce buffers are a bridge, not the destination. The PCIe **TDISP** standard (TEE Device Interface Security Protocol) defines how an attested device can be *accepted into* a VM-based TEE and then DMA directly into the guest's private memory, with no bounce buffers and no extra copies. The CPU-side implementations are **Intel TDX Connect** and **AMD SEV-TIO**; on the device side, GPUs, NICs, and storage controllers must implement TDISP. Blackwell includes TDISP support.
 
 The flow mirrors everything this book has covered: the device presents evidence (its own measurements, signed by device keys), the guest verifies and accepts it, and the hardware then extends the TEE boundary to include the device interface. As TDISP-capable platforms and devices ship, expect the bounce-buffer model, and its overhead, to fade.
 
@@ -47,10 +47,9 @@ The flow mirrors everything this book has covered: the device presents evidence 
 
 | Offering | Status |
 |---|---|
-| Azure confidential GPU VMs (H100 + SEV-SNP, NCC-series) | GA |
-| Google Cloud confidential GPU (H100 on A3) | Preview/GA per region |
+| Azure confidential GPU VMs (H100 on NCC, H200/B200 on ND) | Preview/GA depends on region|
+| Google Cloud confidential GPU (H100/H200 on A3, B200 on A4) | Preview/GA depends on region |
 | NVIDIA NRAS GPU attestation | GA |
-| TDX Connect / SEV-TIO (TDISP) platforms | Emerging |
 
 :::{note}
 GPU CC modes, driver support, and attestation tooling are evolving quickly. Check NVIDIA's [confidential computing documentation](https://docs.nvidia.com/confidential-computing/) for current hardware and software requirements before planning a deployment.
