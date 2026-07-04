@@ -102,7 +102,7 @@ Only the worker nodes run inside CVMs. The Kubernetes control plane (API server,
 - Kubernetes secrets in etcd are accessible to the cloud provider unless separately encrypted
 - Node attestation may or may not be enforced at admission
 
-**Examples:** [GKE Confidential Nodes](https://cloud.google.com/blog/products/identity-security/announcing-general-availability-of-confidential-gke-nodes), 
+**Examples:** [GKE Confidential Nodes](https://cloud.google.com/blog/products/identity-security/announcing-general-availability-of-confidential-gke-nodes), [AKS Confidential VM node pools](https://learn.microsoft.com/en-us/azure/aks/use-cvm)
 
 ### Full: Entire Cluster
 

@@ -152,7 +152,7 @@ sequenceDiagram
 
 ## Hardware Technologies
 
-All major CPU vendors supports CVMs.
+All major CPU vendors support CVMs.
 
 | Vendor | Technology|
 |---|---|
@@ -164,6 +164,10 @@ All major CPU vendors supports CVMs.
 | **IBM Power** | Protected Execution Facility (PEF) |
 | **ARM** | CCA (Confidential Compute Architecture) |
 | **RISC-V** | CoVE (Confidential VM Extensions) |
+
+:::{note}
+**SEV, SEV-ES, and SEV-SNP are successive generations, not alternatives.** Plain SEV encrypts guest memory only; SEV-ES additionally protects CPU register state on VM exits; SEV-SNP adds memory integrity protection (the Reverse Map Table) and a hardware-signed attestation report. Only SEV-SNP provides the full confidentiality, integrity, and attestation guarantees this book assumes. SEV and SEV-ES appear here for completeness and should not be used for new deployments.
+:::
 
 ---
 
@@ -179,6 +183,33 @@ All major CPU vendors supports CVMs.
 | **IBM Cloud** | IBM Secure Execution | GA |
 | **IBM Cloud** | AMD SEV-SNP | GA |
 | **IBM Cloud** | Intel TDX | GA |
+
+---
+
+## Performance and Operational Considerations
+
+A common first question: *what does the encryption cost?* The honest answer is "usually little, but it depends on the workload", and the overhead is rarely where people expect it. Published measurements cluster around 5% overall: across nearly 200 benchmarks on Azure EPYC 9005 confidential VMs, Phoronix measured SEV-SNP guests at 95% of the performance of regular VMs, and Intel's own testing of TDX on 4th Gen Xeon concludes roughly 5% for CPU- and memory-intensive workloads.
+
+### Runtime overhead
+
+- **CPU- and memory-bound workloads** typically see **low single-digit percentage** overhead, attributable to memory encryption (performed by dedicated hardware in the memory controller) plus the costlier guest transitions described below. Intel measured about 3% on SPECrate 2017 and up to 4.5% on the memory-latency-sensitive SPECjbb under TDX, and AMD's SEV-SNP testing on Google Cloud N2D instances showed FFmpeg video encoding performing on par with standard VMs.
+- **I/O-heavy workloads pay more.** Devices cannot DMA directly into the guest's private (encrypted) memory, so every network packet and disk block crosses the boundary through **bounce buffers** (shared, unencrypted pages managed via `swiotlb` in Linux). Each transfer adds a memory copy between shared and private memory, extra guest transitions, and CPU cost per I/O operation. Representative numbers: AMD measured roughly 8% on MySQL and 7% on NGINX for SEV-SNP on Google Cloud N2D instances; Phoronix found 10 to 15% for database and web server workloads on Azure EPYC 9005 CVMs; and Intel measured anywhere from 3.6% to 25% on Redis under TDX, depending on the read/write mix and whether the guest vCPUs had spare headroom to absorb the extra work.
+- **VM exits are more expensive.** On TDX, every guest entry and exit passes through the TDX module (via the SEAMCALL and SEAMRET instructions), which saves and scrubs the TD's CPU state; on SEV-SNP, register state is encrypted on exit. Both make each transition costlier than a plain VM exit, so exit-heavy workloads (frequent interrupts, timer-heavy applications) are disproportionately affected. Guest tunings such as reducing timer tick frequency or using polling-mode I/O threads reduce the transition rate.
+
+Always benchmark *your* workload; published numbers vary widely with kernel version, I/O pattern, and hardware generation, and the worst numbers above come from deliberately unfavorable configurations (saturated vCPUs, undersized database buffers).
+
+*References: [Performance Considerations of Intel TDX on 4th Gen Xeon (Intel)](https://www.intel.com/content/www/us/en/developer/articles/technical/trust-domain-extensions-on-4th-gen-xeon-processors.html), [Confidential Computing Performance with AMD SEV-SNP on Google Cloud N2D (AMD)](https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/performance-briefs/confidential-computing-performance-sev-snp-google-n2d-instances.pdf), [AMD EPYC 9005 SEV-SNP benchmarks (Phoronix)](https://www.phoronix.com/review/amd-epyc-9005-sev-snp), [Evaluating Intel TDX for Production Workloads (OpenMetal)](https://openmetal.io/resources/blog/evaluating-intel-tdx-for-production-workloads-in-2026/)*
+
+### Boot and startup latency
+
+- Guest memory must be validated/accepted before use. Large-memory CVMs use **lazy memory acceptance** to avoid multi-second boot delays; fully pre-accepting memory at launch is slower but avoids runtime acceptance hiccups.
+- Attestation adds a network round-trip (to a verifier and/or certificate service) before secrets are released, and quote generation alone takes tens to hundreds of milliseconds. This is a one-time cost for long-running services but adds up for short-lived or frequently scaled workloads; plan for it in autoscaling paths.
+
+### Operational restrictions
+
+- **Memory cannot be overcommitted or swapped by the host**: guest memory is pinned. Capacity planning is stricter than for regular VMs.
+- **Live migration is limited or unavailable** depending on the platform and cloud, so host maintenance may mean a stop/restart instead of a transparent migration.
+- **Snapshots and hibernation of guest state are generally unsupported**: this is by design, since exporting encrypted guest state would undermine the threat model.
 
 ---
 

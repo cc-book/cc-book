@@ -39,6 +39,25 @@ When you run a workload in an infrastructure managed by an external entity, you 
 
 ***Confidential Computing is one of the key PET technologies.***
 
+## How Confidential Computing Compares to Other PETs
+
+Confidential Computing is not the only technology that protects data during computation. Three cryptographic approaches solve overlapping problems, and it helps to know when each fits:
+
+- **Fully Homomorphic Encryption (FHE)** computes directly on encrypted data: the data is *never* decrypted, not even in memory. The trade-off is performance: depending on the workload, FHE is orders of magnitude slower than plaintext computation, and applications must be rewritten around a restricted set of operations.
+- **Secure Multi-Party Computation (MPC)** lets multiple parties jointly compute a function without revealing their private inputs to each other. It requires no special hardware, but needs interactive protocols between the parties, custom protocol design per application, and significant network overhead.
+- **Differential Privacy (DP)** adds calibrated statistical noise to query results or training data so that individual records cannot be inferred. It protects *outputs*, not the computation itself: the party running the computation still sees the raw data.
+
+| | Confidential Computing | FHE | MPC | Differential Privacy |
+|---|---|---|---|---|
+| **Trust anchor** | CPU vendor's hardware | Mathematics (cryptography) | Mathematics (cryptography) | Statistics |
+| **Performance overhead** | Low (single-digit % for most workloads) | Very high | High (network-bound) | Negligible |
+| **Application changes** | None (VM-based TEEs) | Rewrite around FHE operations | Custom protocol per use case | Query/pipeline changes |
+| **Protects data in use from infrastructure** | ✔ Yes | ✔ Yes | Partially (split among parties) | ✗ No |
+| **General-purpose computation** | ✔ Yes | Limited | Limited | N/A |
+| **Maturity for production** | GA on all major clouds | Emerging | Niche | Mature (analytics) |
+
+The practical takeaway: **Confidential Computing is the only PET that runs existing, unmodified applications at near-native speed**, at the cost of trusting the CPU vendor and its hardware implementation. FHE and MPC remove even that trust assumption but are limited to specialized workloads. These technologies also compose: multi-party analytics can run MPC protocols *inside* TEEs, and a model trained in a TEE can be released with differential privacy guarantees.
+
 ## Confidential Computing Definition
 
 > *"Confidential Computing is the protection of data in use by performing the computation in a hardware-based, attested Trusted Execution Environment."*
@@ -67,7 +86,7 @@ Confidential Computing solves the problem of securing remote computation — exe
 This shifts the trust requirement: instead of trusting the infrastructure operator's policies and personnel, you trust the hardware itself. **A cloud provider's software stack — including privileged administrators — cannot access your data in use, and you can verify this cryptographically.**
 
 :::{note}
-This guarantee applies to *software-layer* attackers. CC's threat model still assumes physical infrastructure security — attacks requiring physical hardware access (such as memory bus interposition) are out of scope. These limits are covered in the Trust Boundary chapter.
+This guarantee applies to *software-layer* attackers. CC's threat model still assumes physical infrastructure security — attacks requiring physical hardware access (such as memory bus interposition) are out of scope. These limits are covered in [Known Attacks Against Confidential Computing](05a_known_attacks.md).
 :::
 
 ```{figure} ../images/page_05.png

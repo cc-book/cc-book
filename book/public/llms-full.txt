@@ -27,7 +27,7 @@ This book assumes working familiarity with the following:
 
 - **Virtualisation** — how hypervisors, VMs, and guest/host boundaries work
 - **Containers and Kubernetes** — container runtimes, pod lifecycle, and cluster architecture
-- **Kata Containers** — VM-based container runtime and its relationship to the Kubernetes CRI
+- **Kata Containers** — helpful but not required; the Confidential Containers chapter includes a primer
 - **Linux fundamentals** — boot process, kernel command line, systemd, and standard CLI tooling
 - **Basic cryptography** — public/private key signing, certificate chains, and hash functions
 - **Cloud infrastructure** — provisioning VMs, networking basics, and cloud CLI tooling (at least one lab targets Azure)
@@ -137,7 +137,7 @@ A co-tenant VM running on the same physical host can leak secrets from another V
 Modern CPUs share the Last-Level Cache (LLC, typically L3) across physical cores, with L1 and L2 per-core. SMT siblings on the same core share L1/L2, but cross-VM co-tenant attacks primarily exploit the shared LLC. A malicious co-tenant can measure cache access times to infer which memory addresses a victim VM is accessing — and from that, reconstruct cryptographic keys or sensitive data patterns.
 
 - **Spectre** (CVE-2017-5753, CVE-2017-5715) — exploits speculative execution to read across privilege boundaries
-- **Meltdown** (CVE-2017-5754) — allows user-space code to read kernel memory; patched in software but with performance cost
+- **Meltdown** (CVE-2017-5754) — allows user-space code to read kernel memory within the same OS; not itself a cross-VM attack, but it demonstrated the transient-execution class of leaks; patched in software but with performance cost
 - **Flush+Reload, Prime+Probe, Evict+Time** — cache side-channel techniques requiring only shared LLC (Last-Level Cache)
 
 **DRAM Rowhammer**
@@ -175,6 +175,7 @@ Regulations increasingly require that data be protected from *infrastructure ope
 | **PCI-DSS** | Global | Cardholder data must be protected at all times | "In use" is an unprotected state in traditional VMs |
 | **FedRAMP / IL4/IL5** | US Federal | US government data must not be accessible to CSP staff | Structural impossibility without hardware isolation |
 | **DORA** | EU | ICT risk management must address third-party service provider access | Cloud infrastructure access breaks the ICT supply chain trust requirements |
+| **NIS2** | EU | Cybersecurity risk management for essential/important entities, including supply chain security | The cloud provider's privileged access to workloads is itself a supply-chain risk that must be managed |
 
 Confidential Computing is increasingly cited by compliance frameworks as the mechanism to satisfy these "data in use" requirements.
 
@@ -205,80 +206,9 @@ Confidential Computing introduces **hardware-enforced TEE boundaries** where:
 
 The tenant trust boundary now extends *down to the hardware*, bypassing the hypervisor entirely. The following chapters explain the mechanisms that make this possible.
 
----
-
-## Known Attacks Against Confidential Computing
-
-Confidential Computing is not a silver bullet. Researchers have demonstrated attacks that bypass CC protections — particularly those requiring physical access to hardware. Understanding these is important for setting accurate expectations.
-
-### BadRAM (CVE-2024-21944)
-
-**What it is:** An attack that exploits rogue DRAM modules to trick the CPU into mapping two distinct addresses to the same physical memory cell — a technique called *memory aliasing*.
-
-**How it works:**
-
-1. The attacker modifies the **SPD (Serial Presence Detect)** chip on a DIMM, causing it to misreport memory size. The CPU is deceived into creating "ghost" addresses that alias real memory regions.
-2. Aliased addresses are discovered automatically (tools take minutes).
-3. Through the alias, the attacker bypasses CPU-enforced memory protections.
-
-For AMD SEV-SNP specifically:
-- The **Reverse Map Table (RMP)** — SEV-SNP's defence against page remapping — is unencrypted and can be directly manipulated via aliasing
-- SEV's static encryption (identical plaintext → identical ciphertext) allows stale-data replay
-- Attackers can **forge attestation measurements**, making backdoored code appear to be a legitimate CVM
-
-**Hardware required:** ~$10 (Raspberry Pi Pico, DDR socket, 9V source)
-
-**Affected TEEs:**
-
-| TEE | Vulnerable? |
-|---|---|
-| AMD SEV-SNP | ✔ Yes (patched via AMD-SB-3015 firmware update) |
-| Intel TDX | ✗ No — alias-checking at boot prevents it |
-| Intel Scalable SGX | ✗ No |
-| ARM CCA | Untested |
-
-**Mitigation:** AMD released a firmware update (AMD-SB-3015) that treats SPD data as untrusted and validates memory configuration in trusted firmware. Major cloud providers have applied this patch.
-
-*Reference: [BadRAM](https://badram.eu)*
-
----
-
-### TEE.Fail — Physical Bus Interposition on DDR5
-
-**What it is:** A side-channel attack that physically intercepts all memory traffic between the CPU and DDR5 DRAM to extract secrets from TEEs — including Intel TDX, AMD SEV-SNP, and Nvidia GPU Confidential Computing.
-
-**How it works:**
-
-Researchers built a custom **interposition device** (~$1,000 of off-the-shelf electronics) that sits between the CPU and DIMM and passively captures all memory bus traffic. The attack exploits a fundamental weakness:
-
-> **AES-XTS encryption, used by both Intel and AMD, is deterministic** — identical plaintexts always produce identical ciphertexts. This allows pattern analysis and data extraction without direct decryption. AES-XTS was chosen specifically for performance: it operates on fixed-size tweakable blocks with no IV negotiation overhead, making it suitable for low-latency memory encryption. The trade-off is this determinism vulnerability.
-
-Even AMD's **Ciphertext Hiding** feature (designed to obscure memory patterns) was shown to be insufficient.
-
-**What can be extracted:**
-
-- Cryptographic keys from Intel TDX and AMD SEV-SNP guests
-- **ECDSA attestation keys** from Intel's Provisioning Certification Enclave (PCE) — the PCE-certified Quoting Enclave (QE) private key can be extracted, allowing an attacker to generate new TDX Quotes (the hardware-specific attestation evidence) that are cryptographically indistinguishable from genuine ones
-- Private signing keys from OpenSSL's ECDSA implementation on fully patched systems
-- Once attestation keys are extracted, the attack extends to **Nvidia GPU Confidential Computing**
-
-**Notable:** this is the first demonstrated attack against DDR5, the latest generation of memory hardware.
-
-**Vendor response:** Both AMD and Intel classify physical bus interposition as **out of scope** for their TEE threat models. No firmware mitigations are planned. Researchers suggest firmware- and cryptographic-library-level countermeasures against deterministic encryption (e.g., probabilistic encryption schemes in the TEE firmware or TLS libraries), though these carry performance costs.
-
-*References: [The Hacker News](https://thehackernews.com/2025/10/new-teefail-side-channel-attack.html)*
-
----
-
-### What These Attacks Mean in Practice
-
-```{admonition} Physical access changes the threat model
-:class: warning
-
-Both BadRAM and TEE.Fail require **physical access to the server hardware** — either to modify DRAM modules (BadRAM) or to attach an interposition device to the memory bus (TEE.Fail). 
-
-It's important to keep in mind that CC threat model still relies on the assumption that the **physical infrastructure is secure**.
-```
+:::{note}
+**Confidential Computing is not a silver bullet.** Researchers have demonstrated attacks that bypass CC protections, notably attacks requiring physical access to the hardware, such as rogue DRAM modules and memory-bus interposition. The CC threat model assumes the physical infrastructure is secure. These attacks are covered in [Known Attacks Against Confidential Computing](05a_known_attacks.md), once the building blocks needed to understand them are in place.
+:::
 
 
 ---
@@ -318,6 +248,25 @@ When you run a workload in an infrastructure managed by an external entity, you 
 
 ***Confidential Computing is one of the key PET technologies.***
 
+## How Confidential Computing Compares to Other PETs
+
+Confidential Computing is not the only technology that protects data during computation. Three cryptographic approaches solve overlapping problems, and it helps to know when each fits:
+
+- **Fully Homomorphic Encryption (FHE)** computes directly on encrypted data: the data is *never* decrypted, not even in memory. The trade-off is performance: depending on the workload, FHE is orders of magnitude slower than plaintext computation, and applications must be rewritten around a restricted set of operations.
+- **Secure Multi-Party Computation (MPC)** lets multiple parties jointly compute a function without revealing their private inputs to each other. It requires no special hardware, but needs interactive protocols between the parties, custom protocol design per application, and significant network overhead.
+- **Differential Privacy (DP)** adds calibrated statistical noise to query results or training data so that individual records cannot be inferred. It protects *outputs*, not the computation itself: the party running the computation still sees the raw data.
+
+| | Confidential Computing | FHE | MPC | Differential Privacy |
+|---|---|---|---|---|
+| **Trust anchor** | CPU vendor's hardware | Mathematics (cryptography) | Mathematics (cryptography) | Statistics |
+| **Performance overhead** | Low (single-digit % for most workloads) | Very high | High (network-bound) | Negligible |
+| **Application changes** | None (VM-based TEEs) | Rewrite around FHE operations | Custom protocol per use case | Query/pipeline changes |
+| **Protects data in use from infrastructure** | ✔ Yes | ✔ Yes | Partially (split among parties) | ✗ No |
+| **General-purpose computation** | ✔ Yes | Limited | Limited | N/A |
+| **Maturity for production** | GA on all major clouds | Emerging | Niche | Mature (analytics) |
+
+The practical takeaway: **Confidential Computing is the only PET that runs existing, unmodified applications at near-native speed**, at the cost of trusting the CPU vendor and its hardware implementation. FHE and MPC remove even that trust assumption but are limited to specialized workloads. These technologies also compose: multi-party analytics can run MPC protocols *inside* TEEs, and a model trained in a TEE can be released with differential privacy guarantees.
+
 ## Confidential Computing Definition
 
 > *"Confidential Computing is the protection of data in use by performing the computation in a hardware-based, attested Trusted Execution Environment."*
@@ -346,7 +295,7 @@ Confidential Computing solves the problem of securing remote computation — exe
 This shifts the trust requirement: instead of trusting the infrastructure operator's policies and personnel, you trust the hardware itself. **A cloud provider's software stack — including privileged administrators — cannot access your data in use, and you can verify this cryptographically.**
 
 :::{note}
-This guarantee applies to *software-layer* attackers. CC's threat model still assumes physical infrastructure security — attacks requiring physical hardware access (such as memory bus interposition) are out of scope. These limits are covered in the Trust Boundary chapter.
+This guarantee applies to *software-layer* attackers. CC's threat model still assumes physical infrastructure security — attacks requiring physical hardware access (such as memory bus interposition) are out of scope. These limits are covered in [Known Attacks Against Confidential Computing](05a_known_attacks.md).
 :::
 
 [diagram]
@@ -447,11 +396,323 @@ This enables a clean separation that was previously impossible:
 
 Before diving into Confidential Containers, it helps to understand the foundational concepts and technologies that make confidential computing possible.
 
-This section covers three areas:
+This section covers four areas:
 
 - **Concepts** — the core ideas: Root of Trust, Trusted Computing Base, TEEs, and boot security mechanisms
 - **TEE Technologies** — how AMD SEV-SNP, Intel TDX, and Intel SGX implement those concepts in practice
 - **Remote Attestation** — how a TEE proves its integrity and initial state to a remote party
+- **Known Attacks** — demonstrated attacks against CC protections, and what they mean for the threat model
+
+
+---
+
+# Concepts
+
+## Root of Trust (RoT)
+
+**A Root of Trust** is an essential, foundational security component that provides a set of trustworthy functions that the rest of the device or system can use to establish strong levels of security.
+
+*[Trusted Computing Group What is a Root of Trust?](https://trustedcomputinggroup.org/about/what-is-a-root-of-trust/)*
+
+### Functions a RoT Provides
+
+| Function | Description |
+|---|---|
+| **Trusted Boot** | Ensures only authorized software starts |
+| **Measurement** | Records what software ran (in a tamper-proof way) |
+| **Secure Storage** | Stores cryptographic keys isolated from system software |
+| **Reporting** | Produces signed attestation reports |
+| **Verification** | Validates other components' integrity |
+
+Example RoTs - AMD Secure Processor, Trusted Platform Module (TPM), Virtual Trusted Platform Module (vTPM), Device Identifier Composition Engine (DICE)
+
+---
+
+## Trusted Platform Module (TPM) and vTPM
+
+TPM (Trusted Platform Module) is a computer chip (microcontroller) that can securely store artifacts used to authenticate the platform (your PC or laptop). These artifacts can include passwords, certificates, or encryption keys. A TPM can also be used to store platform measurements that help ensure that the platform remains trustworthy. It's an example of a RoT component.
+
+A Virtual Trusted Platform Module (vTPM) is a software-based representation of a physical Trusted Platform Module (TPM) 2.0 chip.
+
+:::{warning}
+**A software vTPM is only as trustworthy as what manages it.** If the vTPM is managed by the hypervisor, then the hypervisor is in the Trusted Computing Base (TCB) — a compromised hypervisor can forge vTPM measurements and attestation reports. This is addressed by placing the vTPM *inside* the TEE using SVSM (Secure VM Service Module), which removes the hypervisor from the TCB entirely.
+:::
+
+*[Trusted Computing Group TPM summary](https://trustedcomputinggroup.org/resource/trusted-platform-module-tpm-summary/)*
+
+### TPM Platform Configuration Registers (PCRs)
+
+PCRs are special registers inside a TPM where measurements (hashes) are stored. They can only be **extended** (not overwritten):
+
+```
+New_PCR_Value = SHA256(Old_PCR_Value || New_Measurement)
+```
+
+| PCR | What It Measures |
+|---|---|
+| 0 | UEFI firmware |
+| 1 | UEFI firmware configuration |
+| 4 | Boot manager code and boot attempts |
+| 7 | Secure Boot policy (PK/KEK/db/dbx + the db entry used to authorize each loaded image) |
+| 8-15 | OS/application measurements |
+
+
+---
+
+## Trusted Computing Base (TCB)
+
+The **Trusted Computing Base** is the set of all hardware, firmware, and software components that you *must trust* for your system's security to hold. In a traditional cloud VM, this includes the hypervisor and host OS — both controlled by the cloud provider.
+
+:::{note}
+**KVM collapses the two:** With KVM, the hypervisor is a kernel module inside the host OS. Compromising the host OS also compromises KVM, and vice versa. Throughout this book "host OS + hypervisor" should be read as a single trust domain for KVM-based hypervisor.
+:::
+
+[diagram]
+
+---
+
+## Secure Boot, Trusted Boot, and Measured Boot
+
+### Secure Boot and Trusted Boot
+
+**Secure Boot** verifies digital signatures before running bootloaders.
+
+- It is a feature of the Unified Extensible Firmware Interface (UEFI). It's used to check bootloaders, key operating system files, and the ROM for any tampering attempts.
+- UEFI firmware has signatures stored in a database and Secure Boot will check those signatures. If the signatures don't match, then something was modified incorrectly and the boot process will halt.
+
+**Trusted Boot** extends this with a chain of verification — each stage checks the next before passing control.
+
+- The bootloader (which we've verified to be trustworthy) will check the digital signature of the operating system kernel before loading it.
+- The verified kernel will then verify every other part of the OS startup process including boot drivers and startup files, to make sure those components are all safe.
+
+[diagram]
+
+### Measured Boot
+
+Measured boot uses hardware Root of Trust (RoT) eg. TPM to record a cryptographic hash of every stage of the boot process into PCRs. This creates a tamper-evident audit trail that can be verified remotely at any point in time.
+
+Measured Boot doesn't *block* anything — instead it **records** everything that runs (eg. into the TPM's PCRs). This enables **remote attestation** — a third party can cryptographically verify the exact software stack that booted.
+
+[diagram]
+
+### Summary Comparison
+
+Comparison of boot security mechanisms: Secure Boot and Trusted Boot prevent unauthorized software from running; Measured Boot records what ran and enables remote verification via attestation.
+
+[diagram]
+
+---
+
+## Trusted Execution Environments (TEEs)
+
+A **Trusted Execution Environment (TEE)** is a hardware-enforced, isolated region of a processor that protects code and data from unauthorized access — including from privileged software like the OS, hypervisor, or firmware.
+
+[diagram]
+
+| Characteristic | Description |
+|---|---|
+| **Memory Encryption** | All data in the TEE's memory is encrypted by the hardware. Even physical DRAM access reveals only ciphertext. |
+| **Isolation** | The TEE is isolated from other processes, VMs, and the host OS. Hardware enforces this boundary. |
+| **Remote Attestation** | The TEE can prove its identity and integrity to remote parties cryptographically. |
+| **Data Integrity** | The hardware detects and prevents tampering with TEE memory. |
+
+### Types of TEEs
+
+[diagram]
+
+**VM-Based TEEs** encrypt memory along a traditional VM boundary. The hypervisor cannot read VM memory.
+
+Examples: AMD SEV-SNP, Intel TDX, IBM Secure Execution, IBM PEF
+
+- Protects entire existing applications without code changes
+- Supports standard Linux distributions
+- Scales to large memory and multi-core workloads
+
+**Process-Based TEEs** split an app into trusted and untrusted components. Only the sensitive part runs in encrypted memory.
+
+Example: Intel SGX
+
+- Smaller attack surface (only enclave code is in the TCB)
+- Requires application refactoring to separate trusted/untrusted components
+- Historically constrained to small enclave memory sizes
+
+### TCB Reduction with Confidential Computing
+
+Confidential Computing dramatically reduces the TCB. The hypervisor and host OS move out of the TCB — you no longer need to trust the cloud provider's software stack.
+
+[diagram]
+
+The next section shows how each TEE vendor — AMD SEV-SNP, Intel TDX, and Intel SGX — implements these concepts in practice, and how choices like vTPM placement affect what remains in the TCB.
+
+
+---
+
+# TEE Technologies
+
+This section covers how the major TEE implementations — AMD SEV-SNP, Intel TDX, and Intel SGX — realise the concepts introduced in the previous section: measured boot, TCB configurations, and the certificate chains that underpin remote attestation.
+
+---
+
+(tcb-configurations-for-vm-tees)=
+## TCB Configurations for VM TEEs
+
+The placement of the vTPM relative to the TEE boundary has a direct impact on what ends up in the Trusted Computing Base.
+
+### vTPM Outside the TEE
+
+[diagram]
+
+| Configuration | vTPM Location | Hypervisor in TCB? | Used By |
+|---|---|---|---|
+| vTPM outside TEE | Managed by hypervisor | ✔ Yes | AWS, GCP |
+| vTPM inside TEE | Inside the CVM | ✗ No | Azure CVMs, bare metal (with SVSM) |
+
+### vTPM Inside the TEE (SVSM)
+
+**SVSM** (Secure VM Service Module) runs *inside* the TEE and provides hypervisor-like services (such as vTPM) without involving the hypervisor itself. This means even the cloud provider's hypervisor is excluded from the TCB.
+
+[diagram]
+
+### Without vTPM (Direct Boot Model)
+
+When no vTPM is used, the hypervisor is excluded from the TCB entirely. The hardware Root of Trust generates attestation reports directly from its own measurements.
+
+[diagram]
+
+---
+
+## AMD SEV-SNP
+
+### Measured Boot
+
+Here is an example measured boot flow with an SNP VM TEE in a KVM/Qemu environment. Note that TPM is not used. Instead, the hashes of the kernel, kernel command line and initramfs are stored in guest memory and measured by the AMD Secure Processor (SP).
+
+1. Qemu started with -kernel param (direct boot)
+2. Qemu loads OVMF into guest memory
+3. Qemu loads hashes of kernel, kernel command line and initramfs into guest memory
+4. AMD Secure Processor (SP) measures all the guest memory
+5. Once the OVMF is loaded, it will load the kernel and initramfs into memory, but it will continue the boot process only if the hashes of the kernel, kernel command line and initramfs match the hashes in the measured SEV hashes page in guest memory. (OVMF holds no hash values itself — QEMU injects the hashes page into guest memory, and it is covered by the launch measurement.)
+
+The measurements are available at any time as part of the attestation report and can be used for remote attestation. The attestation report is signed with the Versioned Chip Endorsement Key (VCEK).
+
+[diagram]
+
+### Certificate Chain
+
+```
+AMD Root Key (ARK)
+    └── signs AMD SEV Key (ASK)
+            └── signs VCEK certificate
+                    └── VCEK private key signs SNP attestation report
+```
+
+The VCEK is unique per chip and firmware version. AMD's Key Distribution Service ([KDS](https://wiki.ietf.org/group/rats/referencevalues/amd-key-distribution-service?ref=blog.polyhedra.network)) provides VCEK certificates publicly.
+
+KDS is stateless: certificates are fetched on demand by chip ID and TCB version, with no platform registration required.
+
+The root of trust for the chain is AMD's ARK (AMD Root Key), a long-lived key pair whose public half is published by AMD and embedded in verifier software. Trusting ARK means trusting AMD as the hardware manufacturer — it is the foundational assumption for all AMD SEV-SNP attestation.
+
+:::{admonition} Offline / Disconnected Deployments
+:class: warning
+In air-gapped or network-restricted environments, nodes cannot reach AMD KDS to retrieve VCEK certificates at runtime. Operators must pre-fetch and cache certificate collateral (ARK, ASK, VCEK) and distribute it out-of-band. Failing to plan for this is a common production operational challenge.
+:::
+
+---
+
+## Intel TDX
+
+### Measured Boot
+
+Here is an example measured boot flow with a TDX VM TEE in a KVM/Qemu environment. Note that TPM is not used.
+
+1. Qemu started with -kernel param (direct boot)
+2. Qemu loads OVMF into guest memory
+3. The initial TD contents are measured into the build-time register **MRTD** by the TDX module.
+4. OVMF (TDVF) measures the kernel into **RTMR1**; the kernel's EFI stub then measures the kernel command line and initramfs into **RTMR2**. RTMRs are Runtime Extendable Measurement Registers.
+
+The measurements (MRTD plus the RTMRs and their event log) are available at any time and can be used as evidence for remote attestation.
+
+[diagram]
+
+### Certificate Chain
+
+```
+Intel Root CA
+    └── signs Intel Provisioning Certification Key (PCK) Platform CA
+            └── signs PCK Certificate
+                    └── Provisioning Certification Enclave (PCE) certifies Quoting Enclave (QE) Attestation Key
+                            └── QE signs TDX Quote
+```
+
+The PCK (Provisioning Certification Key) certificate is platform-specific and TCB-version dependent. Intel's Provisioning Certification Service ([PCS](https://api.portal.trustedservices.intel.com/content/documentation.html)) provides PCK certificates. The Quoting Enclave (QE) generates and signs the TDX Quote, while the Provisioning Certification Enclave (PCE) certifies the QE attestation key.
+
+PCS is more infrastructure-heavy than AMD KDS: it requires platform registration, subscription/API access, and a PCCS caching layer for production deployments.
+
+The root of trust is Intel's Root CA, whose public key is published by Intel and embedded in verifier software. Trusting Intel Root CA means trusting Intel as the hardware manufacturer.
+
+:::{admonition} Offline / Disconnected Deployments
+:class: warning
+Because PCK certificate retrieval from Intel PCS requires platform registration and network access, disconnected or air-gapped deployments require a local PCCS (Provisioning Certificate Caching Service) instance pre-loaded with the relevant certificate collateral. This is a significant operational requirement that must be planned for ahead of deployment.
+:::
+
+---
+
+## AMD SEV-SNP vs Intel TDX — Comparison
+
+[diagram]
+
+### Attestation Evidence
+
+| | With TPM | Without TPM (SNP/TDX direct boot) |
+|---|---|---|
+| **Measurements** | PCRs | Specific memory locations (SNP) / RTMRs (TDX) |
+| **Evidence** | PCR Quote + event log | Attestation report / event log |
+| **Secret unsealing** | PCR authorization in hardware | External authorization + policy |
+
+### Certificate Infrastructure
+
+| | AMD SEV-SNP | Intel TDX |
+|---|---|---|
+| **Certificate service** | AMD KDS | Intel PCS |
+| **Certificate type** | VCEK | PCK |
+| **Root chain** | ARK → ASK → VCEK | Intel Root CA → PCK CA → PCK |
+| **Quote collateral** | SNP attestation report | TDX Quote |
+| **Registration required** | No | Yes |
+| **Infrastructure complexity** | Low (stateless fetch) | Higher (PCCS caching) |
+
+### Feature Comparison
+
+| Feature | AMD SEV-SNP | Intel TDX | Intel SGX |
+|---|---|---|---|
+| **Type** | VM-based | VM-based | Process-based |
+| **Granularity** | Full VM | Full VM | Enclave (subset of process) |
+| **App changes needed** | None | None | Yes (trust/untrust split) |
+| **Hypervisor in TCB** | Optional* | Optional* | N/A |
+| **Available on cloud** | AWS, Azure, GCP, IBM Cloud | Azure, GCP, IBM Cloud | Azure, IBM Cloud, Alibaba Cloud |
+
+\* Depends on where the vTPM is placed; see [TCB Configurations for VM TEEs](#tcb-configurations-for-vm-tees) at the top of this section.
+
+:::{note}
+**Intel SGX is deliberately out of scope for this book.** SGX is a process-based TEE requiring applications to be split into trusted and untrusted components, a different programming model from the VM-based TEEs this book focuses on. For a deep treatment, see [Intel SGX Explained (Costan & Devadas)](https://eprint.iacr.org/2016/086.pdf) and Intel's SGX developer documentation.
+:::
+
+---
+
+## Other TEE Architectures
+
+Beyond AMD and Intel on x86, VM-based TEEs exist or are emerging on every major CPU architecture. This book's concepts (measured launch, hardware-signed evidence, a vendor certificate chain) carry over directly; only the component names change.
+
+### Arm CCA
+
+**Arm Confidential Compute Architecture (CCA)**, part of Armv9-A, introduces **Realms**: VM-based TEEs whose memory and register state are inaccessible to the hypervisor and to Arm TrustZone's Secure world. Realms are managed by a small, verifiable firmware component called the **Realm Management Monitor (RMM)**, the architectural analogue of the Intel TDX module. Attestation follows the same pattern as SNP/TDX: the hardware produces a signed **CCA attestation token** covering the Realm's initial measurement, rooted in device keys provisioned by the manufacturer. As of this writing, CCA-capable server hardware is still reaching the market, but the software stack (Linux, KVM, kvmtool/QEMU, Trustee support) is being developed in the open.
+
+### RISC-V CoVE
+
+**CoVE (Confidential VM Extensions)** is the RISC-V specification for VM-based TEEs. It defines **TEE Virtual Machines (TVMs)** managed by a **TEE Security Manager (TSM)** running in a higher privilege level than the hypervisor, again mirroring the TDX module / RMM pattern. CoVE is a specification with reference implementations rather than shipping silicon; it matters because it extends the CC programming and attestation model to an open ISA.
+
+### IBM Z and LinuxONE: Secure Execution
+
+**IBM Secure Execution (SE)** protects KVM guests on IBM Z and LinuxONE using a firmware **ultravisor**. Its trust model differs from SNP/TDX in an instructive way: the guest image is *encrypted at build time* against a host-specific public key, so trust is established by image preparation rather than by comparing runtime measurements, though SE also supports attestation and is integrated with CoCo and Trustee. IBM Power offers a similar capability, the **Protected Execution Facility (PEF)**.
 
 
 ---
@@ -503,17 +764,19 @@ Remote attestation answers all three questions cryptographically.
 
 The industry has standardized remote attestation procedures through the **IETF RATS (Remote ATtestation procedureS)** framework ([RFC 9334](https://www.rfc-editor.org/rfc/rfc9334)).
 
-The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verifier* checks against *Reference Values* from the Reference Value Provider Service (RVPS). The *Verifier* returns an Attestation Result to the *Relying Party*, which then decides whether to release a resource (e.g., a decryption key).
+The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verifier* checks against *Reference Values* from a Reference Value Provider. The *Verifier* returns an Attestation Result to the *Relying Party*, which then decides whether to release a resource (e.g., a decryption key).
 
-### Key Roles
+### Key Roles and Artifacts
 
-| Role | Description | Example |
+| Role / Artifact | Description | Example |
 |---|---|---|
-| **Attester** | The entity being attested — generates evidence about itself | The TEE (CVM) |
-| **Evidence** | Claims produced by the Attester, containing measurements | Attestation report with PCR/RTMR values |
-| **Verifier** | Validates evidence against reference values | Attestation Service (AS) |
-| **Reference Value Provider (RVPS)** | Supplies the "golden" reference measurements | Firmware vendor, OS publisher |
-| **Relying Party** | Uses the attestation result to make decisions | Application owner, Resource gatekeeper |
+| **Attester** (role) | The entity being attested — generates evidence about itself | The TEE (CVM) |
+| **Evidence** (artifact) | Claims produced by the Attester, containing measurements | Attestation report with PCR/RTMR values |
+| **Verifier** (role) | Validates evidence against reference values | Attestation Service (AS) |
+| **Reference Value Provider** (role) | Supplies the "golden" reference measurements | Firmware vendor, OS publisher |
+| **Relying Party** (role) | Uses the attestation result to make decisions | Application owner, Resource gatekeeper |
+
+Trustee (Chapter 11) implements the Reference Value Provider role as a component called the **Reference Value Provider Service (RVPS)**. That name is Trustee-specific, not an IETF term.
 
 :::{note}
 **Evidence vs attestation report — terminology clarification**
@@ -576,12 +839,117 @@ Here is the flow of a passport check model:
 
 ---
 
+## Attestation Operations in Practice
+
+The mechanics above are the easy part. The recurring operational work in production attestation is managing *reference values* and *policy* over time.
+
+### Where reference values come from
+
+A verifier needs "golden" measurements to compare Evidence against. In practice they come from three sources:
+
+1. **Vendor-published values**: firmware vendors and OS publishers can publish expected measurements for their releases.
+2. **Computed from the image**: tools compute the expected launch measurement directly from the artifacts you deploy. For example, [sev-snp-measure](https://github.com/virtee/sev-snp-measure) derives the SNP launch measurement from a given OVMF binary, kernel, initrd, and command line. This is the most common approach for custom guest images.
+3. **Reproducible builds**: if the guest image builds reproducibly, anyone can independently rebuild it and confirm the measurement, removing the need to trust the image publisher's claim.
+
+### Measurement churn
+
+Every update to a measured component (firmware, kernel, initramfs, kernel command line, agent policy) changes the measurements. That means:
+
+- **Patching is an attestation event.** A routine kernel security update will cause attestation failures unless the new reference values are provisioned to the verifier *before* the updated guests boot.
+- **Rollouts need overlapping trust windows.** During a fleet upgrade, the verifier must accept both the old and new measurements; the old values are retired once the rollout completes.
+- **Automate the pipeline.** Mature deployments generate reference values in CI as part of the image build and push them to the verifier (e.g., Trustee's RVPS) in the same pipeline that publishes the image.
+
+### TCB versioning and recovery
+
+Hardware vendors patch their own platform security (microcode, SNP firmware, the TDX module). The platform's **TCB version** is reported inside the Evidence, and the signing key itself is bound to it (AMD's VCEK is derived per TCB version). Verifier policy should enforce a *minimum* TCB version. This is how the ecosystem recovers from hardware vulnerabilities: the vendor ships fixed firmware, and verifiers raise the required TCB floor, causing unpatched hosts to fail attestation. A host that lags on firmware updates will (correctly) stop receiving secrets.
+
+### Policy, not just matching
+
+Real verifiers don't hard-compare every field. They evaluate Evidence against a **policy** (Trustee's Attestation Service uses [OPA](https://www.openpolicyagent.org/) Rego policies) that decides *which* claims matter: exact launch measurement pinning, minimum TCB version, allowed hardware models, debug-mode disallowed, and so on. Looser policies ease operations; tighter policies narrow the attack surface. Chapter 11 shows where these policies live in Trustee.
+
+---
+
 ## Security Considerations
 
 - **Freshness:** Always use nonces in attestation to prevent replay attacks.
 - **Revocation:** If a CPU is found vulnerable, AMD/Intel can revoke VCEK/PCK certificates. Verifiers should check revocation lists.
-- **Reference Value Management:** Keeping reference values (golden measurements) up to date as software is patched is an ongoing operational challenge.
 - **Third-Party Trust:** When using cloud-provided attestation services, you trust the cloud provider's attestation infrastructure. Self-hosted Trustee eliminates this dependency. Trustee is covered in detail in Chapter 11, along with its integration into the CoCo attestation flow.
+
+---
+
+# Known Attacks Against Confidential Computing
+
+Confidential Computing is not a silver bullet. Researchers have demonstrated attacks that bypass CC protections — particularly those requiring physical access to hardware. Now that the building blocks are in place (TEE hardware, measured boot, certificate chains, and remote attestation), you have the vocabulary to understand how these attacks work and what they mean for the threat model. Understanding them is important for setting accurate expectations.
+
+## BadRAM (CVE-2024-21944)
+
+**What it is:** An attack that exploits rogue DRAM modules to trick the CPU into mapping two distinct addresses to the same physical memory cell — a technique called *memory aliasing*.
+
+**How it works:**
+
+1. The attacker modifies the **SPD (Serial Presence Detect)** chip on a DIMM, causing it to misreport memory size. The CPU is deceived into creating "ghost" addresses that alias real memory regions.
+2. Aliased addresses are discovered automatically (tools take minutes).
+3. Through the alias, the attacker bypasses CPU-enforced memory protections.
+
+For AMD SEV-SNP specifically:
+- The **Reverse Map Table (RMP)** — SEV-SNP's defence against page remapping — is unencrypted and can be directly manipulated via aliasing
+- SEV's static encryption (identical plaintext → identical ciphertext) allows stale-data replay
+- Attackers can **forge attestation measurements**, making backdoored code appear to be a legitimate CVM
+
+**Hardware required:** ~$10 (Raspberry Pi Pico, DDR socket, 9V source)
+
+**Affected TEEs:**
+
+| TEE | Vulnerable? |
+|---|---|
+| AMD SEV-SNP | ✔ Yes (patched via AMD-SB-3015 firmware update) |
+| Intel TDX | ✗ No — alias-checking at boot prevents it |
+| Intel Scalable SGX | ✗ No |
+| ARM CCA | Untested |
+
+**Mitigation:** AMD released a firmware update (AMD-SB-3015) that treats SPD data as untrusted and validates memory configuration in trusted firmware. Major cloud providers have applied this patch.
+
+*Reference: [BadRAM](https://badram.eu)*
+
+---
+
+## TEE.Fail — Physical Bus Interposition on DDR5
+
+**What it is:** A side-channel attack that physically intercepts all memory traffic between the CPU and DDR5 DRAM to extract secrets from TEEs — including Intel TDX, AMD SEV-SNP, and Nvidia GPU Confidential Computing.
+
+**How it works:**
+
+Researchers built a custom **interposition device** (~$1,000 of off-the-shelf electronics) that sits between the CPU and DIMM and passively captures all memory bus traffic. The attack exploits a fundamental weakness:
+
+> **AES-XTS encryption, used by both Intel and AMD, is deterministic** — identical plaintexts always produce identical ciphertexts. This allows pattern analysis and data extraction without direct decryption. AES-XTS was chosen specifically for performance: it operates on fixed-size tweakable blocks with no IV negotiation overhead, making it suitable for low-latency memory encryption. The trade-off is this determinism vulnerability.
+
+Even AMD's **Ciphertext Hiding** feature (designed to obscure memory patterns) was shown to be insufficient.
+
+**What can be extracted:**
+
+- Cryptographic keys from Intel TDX and AMD SEV-SNP guests
+- **ECDSA attestation keys** from Intel's Provisioning Certification Enclave (PCE) — the PCE-certified Quoting Enclave (QE) private key can be extracted, allowing an attacker to generate new TDX Quotes (the hardware-specific attestation evidence) that are cryptographically indistinguishable from genuine ones
+- Private signing keys from OpenSSL's ECDSA implementation on fully patched systems
+- Once attestation keys are extracted, the attack extends to **Nvidia GPU Confidential Computing**
+
+**Notable:** this is the first demonstrated attack against DDR5, the latest generation of memory hardware.
+
+**Vendor response:** Both AMD and Intel classify physical bus interposition as **out of scope** for their TEE threat models. No firmware mitigations are planned. Researchers suggest firmware- and cryptographic-library-level countermeasures against deterministic encryption (e.g., probabilistic encryption schemes in the TEE firmware or TLS libraries), though these carry performance costs.
+
+*References: [The Hacker News](https://thehackernews.com/2025/10/new-teefail-side-channel-attack.html)*
+
+---
+
+## What These Attacks Mean in Practice
+
+```{admonition} Physical access changes the threat model
+:class: warning
+
+Both BadRAM and TEE.Fail require **physical access to the server hardware** — either to modify DRAM modules (BadRAM) or to attach an interposition device to the memory bus (TEE.Fail). 
+
+It's important to keep in mind that CC threat model still relies on the assumption that the **physical infrastructure is secure**.
+```
+
 
 ---
 
@@ -787,7 +1155,7 @@ The hardware generates a **signed attestation report** containing the boot measu
 
 ## Hardware Technologies
 
-All major CPU vendors supports CVMs.
+All major CPU vendors support CVMs.
 
 | Vendor | Technology|
 |---|---|
@@ -799,6 +1167,10 @@ All major CPU vendors supports CVMs.
 | **IBM Power** | Protected Execution Facility (PEF) |
 | **ARM** | CCA (Confidential Compute Architecture) |
 | **RISC-V** | CoVE (Confidential VM Extensions) |
+
+:::{note}
+**SEV, SEV-ES, and SEV-SNP are successive generations, not alternatives.** Plain SEV encrypts guest memory only; SEV-ES additionally protects CPU register state on VM exits; SEV-SNP adds memory integrity protection (the Reverse Map Table) and a hardware-signed attestation report. Only SEV-SNP provides the full confidentiality, integrity, and attestation guarantees this book assumes. SEV and SEV-ES appear here for completeness and should not be used for new deployments.
+:::
 
 ---
 
@@ -814,6 +1186,33 @@ All major CPU vendors supports CVMs.
 | **IBM Cloud** | IBM Secure Execution | GA |
 | **IBM Cloud** | AMD SEV-SNP | GA |
 | **IBM Cloud** | Intel TDX | GA |
+
+---
+
+## Performance and Operational Considerations
+
+A common first question: *what does the encryption cost?* The honest answer is "usually little, but it depends on the workload", and the overhead is rarely where people expect it. Published measurements cluster around 5% overall: across nearly 200 benchmarks on Azure EPYC 9005 confidential VMs, Phoronix measured SEV-SNP guests at 95% of the performance of regular VMs, and Intel's own testing of TDX on 4th Gen Xeon concludes roughly 5% for CPU- and memory-intensive workloads.
+
+### Runtime overhead
+
+- **CPU- and memory-bound workloads** typically see **low single-digit percentage** overhead, attributable to memory encryption (performed by dedicated hardware in the memory controller) plus the costlier guest transitions described below. Intel measured about 3% on SPECrate 2017 and up to 4.5% on the memory-latency-sensitive SPECjbb under TDX, and AMD's SEV-SNP testing on Google Cloud N2D instances showed FFmpeg video encoding performing on par with standard VMs.
+- **I/O-heavy workloads pay more.** Devices cannot DMA directly into the guest's private (encrypted) memory, so every network packet and disk block crosses the boundary through **bounce buffers** (shared, unencrypted pages managed via `swiotlb` in Linux). Each transfer adds a memory copy between shared and private memory, extra guest transitions, and CPU cost per I/O operation. Representative numbers: AMD measured roughly 8% on MySQL and 7% on NGINX for SEV-SNP on Google Cloud N2D instances; Phoronix found 10 to 15% for database and web server workloads on Azure EPYC 9005 CVMs; and Intel measured anywhere from 3.6% to 25% on Redis under TDX, depending on the read/write mix and whether the guest vCPUs had spare headroom to absorb the extra work.
+- **VM exits are more expensive.** On TDX, every guest entry and exit passes through the TDX module (via the SEAMCALL and SEAMRET instructions), which saves and scrubs the TD's CPU state; on SEV-SNP, register state is encrypted on exit. Both make each transition costlier than a plain VM exit, so exit-heavy workloads (frequent interrupts, timer-heavy applications) are disproportionately affected. Guest tunings such as reducing timer tick frequency or using polling-mode I/O threads reduce the transition rate.
+
+Always benchmark *your* workload; published numbers vary widely with kernel version, I/O pattern, and hardware generation, and the worst numbers above come from deliberately unfavorable configurations (saturated vCPUs, undersized database buffers).
+
+*References: [Performance Considerations of Intel TDX on 4th Gen Xeon (Intel)](https://www.intel.com/content/www/us/en/developer/articles/technical/trust-domain-extensions-on-4th-gen-xeon-processors.html), [Confidential Computing Performance with AMD SEV-SNP on Google Cloud N2D (AMD)](https://www.amd.com/content/dam/amd/en/documents/epyc-business-docs/performance-briefs/confidential-computing-performance-sev-snp-google-n2d-instances.pdf), [AMD EPYC 9005 SEV-SNP benchmarks (Phoronix)](https://www.phoronix.com/review/amd-epyc-9005-sev-snp), [Evaluating Intel TDX for Production Workloads (OpenMetal)](https://openmetal.io/resources/blog/evaluating-intel-tdx-for-production-workloads-in-2026/)*
+
+### Boot and startup latency
+
+- Guest memory must be validated/accepted before use. Large-memory CVMs use **lazy memory acceptance** to avoid multi-second boot delays; fully pre-accepting memory at launch is slower but avoids runtime acceptance hiccups.
+- Attestation adds a network round-trip (to a verifier and/or certificate service) before secrets are released, and quote generation alone takes tens to hundreds of milliseconds. This is a one-time cost for long-running services but adds up for short-lived or frequently scaled workloads; plan for it in autoscaling paths.
+
+### Operational restrictions
+
+- **Memory cannot be overcommitted or swapped by the host**: guest memory is pinned. Capacity planning is stricter than for regular VMs.
+- **Live migration is limited or unavailable** depending on the platform and cloud, so host maintenance may mean a stop/restart instead of a transparent migration.
+- **Snapshots and hibernation of guest state are generally unsupported**: this is by design, since exporting encrypted guest state would undermine the threat model.
 
 ---
 
@@ -849,6 +1248,28 @@ CoCo provides two deployment approaches:
 
 ---
 
+## Kata Containers Primer
+
+CoCo is built on [Kata Containers](https://katacontainers.io/), so a working picture of Kata is essential before the rest of this chapter. If you already run Kata, skip ahead.
+
+**The core idea:** Kata is an OCI-compatible container runtime that runs each Kubernetes pod inside its own **lightweight virtual machine** instead of a shared-kernel namespace sandbox. The workload gets a dedicated guest kernel, so a container escape ends inside the VM, not on the node.
+
+**How a Kata pod starts:**
+
+1. A pod's `runtimeClassName: kata` routes the CRI request from containerd/CRI-O to the Kata **shim** (`containerd-shim-kata-v2`) instead of the default runc handler.
+2. The shim launches a hypervisor (QEMU, Cloud Hypervisor, or Firecracker) that boots a minimal VM: a stripped-down guest kernel and a small rootfs image containing the **kata-agent**.
+3. The shim talks to kata-agent over a **vsock** channel (a host-to-guest socket that needs no networking). The agent creates and manages the pod's containers inside the VM.
+4. To Kubernetes, none of this is visible: the kubelet sees an ordinary pod. One pod = one VM; all containers of that pod share the same guest.
+
+Two properties of this architecture matter for everything that follows:
+
+- **The VM boundary is a natural TEE boundary.** Because the pod already lives in a VM, swapping that VM for a *confidential* VM (SEV-SNP, TDX) is an evolution of the architecture, not a redesign.
+- **kata-agent is the control plane's only door into the guest.** Every operation Kubernetes performs on the pod (start container, exec, resize) arrives as an agent API request, a single choke point where CoCo later attaches policy enforcement.
+
+For the full architecture, see the [Kata Containers documentation](https://github.com/kata-containers/kata-containers/tree/main/docs).
+
+---
+
 ## From Kata to CoCo: The Key Difference
 
 Kata Containers **protects the host from the workload**.
@@ -867,7 +1288,7 @@ CoCo **protects the workload from the host**.
 
 ## Architecture: CoCo/bare-metal (Local Hypervisor)
 
-The Confidential VM (CVM) runs on the worker node. Inside the CVM: kata-agent manages the lifecycle of the pod (containers), image-rs (part of kata-agent) downloads the container images, the Confidential Data Hub (CDH) serves as the secret retrieval proxy, and the Attestation Agent (AA) handles the attestation process. Container images are always downloaded inside the CVM, never on the host.
+The Confidential VM (CVM) runs on the worker node. Inside the CVM: kata-agent manages the lifecycle of the pod (containers), image-rs (the container image management library from guest-components, linked into kata-agent) downloads the container images, the Confidential Data Hub (CDH) serves as the secret retrieval proxy, and the Attestation Agent (AA) handles the attestation process. Container images are always downloaded inside the CVM, never on the host.
 
 [diagram]
 
@@ -881,11 +1302,56 @@ The Confidential VM runs external to the worker node. The worker node hosts only
 
 ---
 
+## Pod Startup, End to End
+
+Putting the pieces together — what happens when you `kubectl apply` a pod with a CoCo runtime class (bare-metal case):
+
+1. **Scheduling and runtime dispatch.** The scheduler places the pod; kubelet asks containerd to create it. The pod's `runtimeClassName` (e.g., `kata-qemu-snp`) routes the request to the Kata shim instead of the default runtime.
+2. **CVM launch.** The Kata shim starts QEMU, which creates a confidential VM from the measured guest components: firmware, kernel, initramfs, and the dm-verity-protected rootfs. The pod's **initdata** (KBS URL, agent policy; see below) is passed in, and its digest is bound into the TEE's launch state.
+3. **Hardware measurement.** The TEE hardware (AMD SP / TDX module) measures the launch. From this point, anything the host tampers with will surface as an attestation mismatch.
+4. **Guest-side image pull.** containerd delegates image handling to the nydus snapshotter, so layers are *not* pulled on the host. Inside the CVM, kata-agent (via image-rs) pulls the container image, verifying signatures and decrypting layers according to policy. Any keys needed for this are requested through the CDH, which triggers attestation against Trustee.
+5. **Policy-gated API.** Every request the control plane sends to kata-agent (start container, exec, set env) is first evaluated against the agent's OPA policy. Requests the policy forbids, such as `exec`, are rejected regardless of who asks.
+6. **Containers start** inside the CVM. Further secrets are fetched lazily via the CDH API as the workload requests them.
+
+The same flow applies to peer-pods, except the CVM is created via cloud APIs (by the cloud-api-adaptor) instead of a local QEMU.
+
+---
+
+## Configuring Trust: initdata and Agent Policy
+
+A CoCo CVM image is generic: it must not embed deployment-specific configuration, or every deployment would need its own measured image. **Initdata** solves this: a small, structured document (the KBS URL, Attestation Agent and CDH configuration, and the agent's OPA policy) supplied per-pod at creation time.
+
+The host delivers initdata, and the host is untrusted, so initdata is anchored to the hardware: its digest is bound into the TEE's launch state (the `HOSTDATA` field on SEV-SNP, `MRCONFIGID` on Intel TDX) and therefore appears in the attestation Evidence. The verifier checks it like any other measurement. A host that swaps the policy for a permissive one, or points the agent at a rogue KBS, changes the digest and breaks attestation.
+
+The **agent policy** is an [OPA](https://www.openpolicyagent.org/) Rego document evaluated by kata-agent for every control-plane request. This is what makes the Kubernetes control plane *untrusted but still functional*: the cluster can manage the pod lifecycle, while operations that would expose workload data (typically `exec`, `logs` redirection, injecting containers) are denied inside the TEE. Lab 3 shows the default policy `cococtl` generates.
+
+---
+
+## Protecting Container Images
+
+Guest-side pulling protects image *content* from the host at runtime. Two complementary mechanisms extend this:
+
+- **Signed images.** Image signature verification (e.g., cosign signatures) runs *inside* the CVM, with the signature policy and trusted keys fetched from Trustee after attestation. The host cannot substitute a tampered image, because verification happens behind the TEE boundary against attested policy.
+- **Encrypted images.** For proprietary code or models, images can be encrypted (OCI image encryption/ocicrypt). The registry, the network, and the host only ever see ciphertext; the decryption key is released by Trustee to attested CVMs only. This is the standard pattern for the "protect model weights from the provider" use case in Chapter 3.
+
+Both policies are themselves resources fetched via attestation, so the entire image trust chain is rooted in the hardware.
+
+---
+
 ## CoCo Threat Model
 
-The untrusted components include the host OS, hypervisor, cloud provider software, other VMs on the same host, other processes on the worker node, and the Kubernetes control plane (kubelet, etcd, API server).
+The untrusted components include the host OS, hypervisor, cloud provider software, other VMs on the same host, other processes on the worker node, the Kubernetes control plane (API server, etcd, scheduler), and the node agents (kubelet, containerd/CRI-O).
 
 Application code vulnerabilities, availability attacks, and physical attacks are out of scope.
+
+### What CoCo Does Not Hide
+
+CoCo protects the *contents* of the workload. A realistic deployment assessment should also note what remains visible to the untrusted infrastructure and cluster:
+
+- **Kubernetes metadata**: pod names, labels, annotations, namespaces, and the full pod spec live in etcd. Don't put sensitive values in metadata or plain env vars.
+- **Image references**: the host and registry see *which* images are pulled (names and sizes), even when content is encrypted.
+- **Traffic and resource patterns**: the host observes network flow metadata, CPU/memory usage, and timing. Application-layer traffic must still be encrypted (TLS) since it leaves the TEE.
+- **Availability**: the cluster admin can still delete, reschedule, or refuse to run pods. CC protects confidentiality and integrity, never availability.
 
 ---
 
@@ -898,7 +1364,7 @@ Attestation in CoCo happens *lazily* — only when an operation first depends on
 - Before container startup (e.g., to retrieve an image decryption key or a sealed secret)
 - Or later in the workload lifecycle
 
-If a workload requires no resources, it won't be attested — which would make it insecure by design. Conversely, successfully receiving a resource (especially a secret known only to Trustee) implies attestation has already occurred.
+A consequence of lazy attestation: a workload that never requests a resource is never attested. A running pod is not, by itself, proof that attestation happened. Conversely, successfully receiving a resource (especially a secret known only to Trustee) implies attestation has already occurred. If you need a hard guarantee that a workload attested before starting, gate startup on a secret retrieval (for example, via an init container that fetches a resource from Trustee).
 
 ---
 
@@ -1018,7 +1484,7 @@ Only the worker nodes run inside CVMs. The Kubernetes control plane (API server,
 - Kubernetes secrets in etcd are accessible to the cloud provider unless separately encrypted
 - Node attestation may or may not be enforced at admission
 
-**Examples:** [GKE Confidential Nodes](https://cloud.google.com/blog/products/identity-security/announcing-general-availability-of-confidential-gke-nodes), 
+**Examples:** [GKE Confidential Nodes](https://cloud.google.com/blog/products/identity-security/announcing-general-availability-of-confidential-gke-nodes), [AKS Confidential VM node pools](https://learn.microsoft.com/en-us/azure/aks/use-cvm)
 
 ### Full: Entire Cluster
 
@@ -1131,6 +1597,67 @@ A **sealed secret** is a Kubernetes Secret whose value is encrypted and can only
 | Key Broker Service (KBS) | Relying Party |
 | CVM attestation report | Evidence |
 | Attestation Result | Attestation Result |
+
+
+---
+
+# Confidential Computing for GPUs and Devices
+
+The use cases that drive Confidential Computing adoption today, such as model training, inference, and confidential AI services, run on GPUs. But everything covered so far protects *CPU* memory: a CVM with an attached GPU still hands its data to a device that sits outside the TEE boundary, with model weights and training data crossing the PCIe bus and residing in GPU memory in plaintext. This chapter covers how the TEE boundary is being extended to accelerators.
+
+---
+
+## The Problem: The TEE Boundary Stops at the CPU
+
+In a standard CVM with GPU passthrough:
+
+- **GPU memory is not covered** by the CPU's memory encryption: the hypervisor and anyone with physical access can potentially inspect it
+- **PCIe transfers are plaintext**: data moving between CVM memory and the GPU transits the bus unprotected
+- **The GPU itself is unattested**: nothing proves the device is genuine or running unmodified firmware
+
+For the Chapter 3 AI use cases, this is exactly where the sensitive assets live. A confidential AI deployment needs the GPU inside the trust boundary.
+
+---
+
+## NVIDIA Confidential Computing (Hopper and Later)
+
+NVIDIA's H100 (Hopper) was the first GPU with a confidential computing mode; Blackwell extends it. With CC mode enabled:
+
+- **On-GPU isolation.** Hardware firewalls block access to GPU memory from outside the GPU TEE, including from the hypervisor and other GPU contexts.
+- **Encrypted transfers.** The NVIDIA driver running *inside* the CVM establishes an encrypted session with the GPU (via the SPDM protocol). DMA between the CVM and the GPU goes through encrypted bounce buffers in shared memory, so the PCIe bus and the host only see ciphertext.
+- **GPU attestation.** The GPU produces its own attestation report containing measurements of its firmware (VBIOS) and configuration, signed by device keys rooted in NVIDIA's certificate authority. Verification is done against the [NVIDIA Remote Attestation Service (NRAS)](https://docs.nvidia.com/attestation/) or a local verifier.
+- **Multi-GPU support.** NVLink traffic between GPUs in the same TEE can also be protected, enabling confidential multi-GPU training.
+
+### Composite Attestation
+
+A confidential GPU workload has *two* attesters: the CVM (CPU TEE) and the GPU. A relying party must verify both before releasing secrets: CPU evidence against AMD/Intel roots, and GPU evidence against NVIDIA's. It must also confirm the two are bound together, that is, the GPU is attached to *this* attested CVM. Attestation services are adding this composition: Trustee can delegate GPU evidence verification to NRAS, and Azure/Intel attestation services offer similar flows. In RATS terms, nothing changes conceptually; there are simply multiple pieces of Evidence for the Verifier to appraise.
+
+### Performance
+
+Compute that stays on the GPU runs at essentially native speed: GPU memory bandwidth and compute are unaffected. The overhead concentrates in the encrypted bounce-buffer path across PCIe, so workloads with heavy host-to-device transfer (data-loading-bound training) pay more than inference or compute-bound training that keeps data resident on the GPU.
+
+---
+
+## Trusted I/O: Removing the Bounce Buffers
+
+Encrypted bounce buffers are a bridge, not the destination. The PCIe **TDISP** standard (TEE Device Interface Security Protocol) defines how an attested device can be *accepted into* a VM-based TEE and then DMA directly into the guest's private memory, with no bounce buffers and no extra copies. The CPU-side implementations are **Intel TDX Connect** and **AMD SEV-TIO**; on the device side, GPUs, NICs, and storage controllers must implement TDISP.
+
+The flow mirrors everything this book has covered: the device presents evidence (its own measurements, signed by device keys), the guest verifies and accepts it, and the hardware then extends the TEE boundary to include the device interface. As TDISP-capable platforms and devices ship, expect the bounce-buffer model, and its overhead, to fade.
+
+---
+
+## Availability
+
+| Offering | Status |
+|---|---|
+| Azure confidential GPU VMs (H100 + SEV-SNP, NCC-series) | GA |
+| Google Cloud confidential GPU (H100 on A3) | Preview/GA per region |
+| NVIDIA NRAS GPU attestation | GA |
+| TDX Connect / SEV-TIO (TDISP) platforms | Emerging |
+
+:::{note}
+GPU CC modes, driver support, and attestation tooling are evolving quickly. Check NVIDIA's [confidential computing documentation](https://docs.nvidia.com/confidential-computing/) for current hardware and software requirements before planning a deployment.
+:::
 
 
 ---
@@ -1742,7 +2269,8 @@ The Attestation Agent inside the Kata VM needs to know the KBS URL. Pass it via 
 
 ```{code-block} yaml
 :caption: coco-secret-pod.yaml
-cat > coco-secret-pod.yaml << 'EOF'
+# Unquoted EOF so ${KBS_URL} is expanded into the manifest
+cat > coco-secret-pod.yaml << EOF
 apiVersion: v1
 kind: Pod
 metadata:
@@ -1987,7 +2515,7 @@ This lab runs a Kubernetes cluster on a standard VM and connects it to an Azure 
 
 ```{admonition} BYOM images are not in the release artifacts
 :class: note
-The CAA v0.21.0 release does not publish pre-built BYOM images. This lab includes a one-time build step to compile the BYOM binaries from source and push them to a container registry you control. The build takes roughly 2–3 hours on a 4-vCPU VM; plan accordingly or run it in a background session.
+The CAA v0.21.0 release does not publish pre-built BYOM images. This lab uses pre-built images from the author's registry (`quay.io/bpradipt`). If you prefer to build them yourself, the `podvm-byom-binaries` and CAA images can be built from the [cloud-api-adaptor](https://github.com/confidential-containers/cloud-api-adaptor) source at tag `v0.21.0` and pushed to a registry you control (budget roughly 2–3 hours on a 4-vCPU VM), then substitute your image references in Steps 5 and 7.
 ```
 
 The lab uses two Azure VMs in the same VNet:
@@ -2001,7 +2529,7 @@ The lab uses two Azure VMs in the same VNet:
 
 - Azure subscription with quota for **DCasv5-series** (CVM) and **D4s_v3** in East US or West Europe
 - Azure CLI installed and authenticated (`az login`)
-- A container registry you can push to (Docker Hub, quay.io, GitHub Container Registry, or ACR)
+- (Optional) A container registry you can push to, only needed if you build the BYOM images yourself instead of using the pre-built ones
 
 ## Estimated Cost
 
@@ -2222,7 +2750,8 @@ Deploy the peerpods chart (version 0.3.0 ships with CAA v0.21.0). This chart ins
 
 ```{code-block} yaml
 :caption: byom-values.yaml
-cat > byom-values.yaml << 'EOF'
+# Unquoted EOF so ${CVM_PRIVATE_IP} is expanded into the values file
+cat > byom-values.yaml << EOF
 provider: byom
 
 image:
