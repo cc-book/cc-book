@@ -45,4 +45,4 @@ podman-build:
 	podman build -t $(IMAGE) -f Containerfile .
 
 podman-serve: podman-build
-	podman run --rm -p $(PORT):$(PORT) -p $(CONTENT_PORT):$(CONTENT_PORT) $(IMAGE)
+	podman run --rm -p 127.0.0.1:$(PORT):$(PORT) -p 127.0.0.1:$(CONTENT_PORT):$(CONTENT_PORT) $(IMAGE)
