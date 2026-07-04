@@ -16,6 +16,7 @@ jobs:
       contents: read
       pages: write
       id-token: write
+      actions: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -31,6 +32,28 @@ jobs:
         env:
           BASE_URL: /cc-book
         run: make build
+
+      # Reruns of this workflow attempt keep the previous attempt's
+      # "github-pages" artifact around, which makes deploy-pages fail
+      # with "Multiple artifacts named github-pages were found".
+      - name: Remove github-pages artifact from earlier attempts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+            });
+            for (const artifact of data.artifacts) {
+              if (artifact.name === "github-pages") {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                });
+              }
+            }
 
       - uses: actions/upload-pages-artifact@v3
         with:
