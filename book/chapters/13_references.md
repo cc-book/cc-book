@@ -25,5 +25,5 @@ For a comprehensive list of Confidential Computing resources, tools, papers, and
 |---|---|
 | [Securing Remote Computation (2016)](https://eprint.iacr.org/2016/086.pdf) | Foundational paper on the problem CC solves |
 | [Building Trust into OS Images for CoCo](https://confidentialcontainers.org/blog/2024/03/01/building-trust-into-os-images-for-confidential-containers/) | dm-verity and integrity protection for CVM images |
-| [Policing a Sandbox — CoCo](https://confidentialcontainers.org/blog/2023/09/12/policing-a-sandbox/) | Policy enforcement for CoCo workloads |
+| [Policing a Sandbox — CoCo](https://confidentialcontainers.org/blog/2024/08/15/policing-a-sandbox/) | Policy enforcement for CoCo workloads |
 | [CoCo Architecture](https://github.com/confidential-containers/documentation/blob/main/architecture.md) | Full CoCo architecture documentation |
