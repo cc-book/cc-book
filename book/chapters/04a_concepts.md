@@ -1,4 +1,10 @@
-# Concepts
+# Confidential Computing Security Concepts
+
+The security model behind confidential computing depends on several connected
+concepts: Roots of Trust establish a trustworthy foundation, the Trusted
+Computing Base defines what must be trusted, and boot measurements record the
+software loaded into a Trusted Execution Environment (TEE). This chapter
+explains each concept and how it contributes to protecting data in use.
 
 ## Root of Trust (RoT)
 
@@ -22,12 +28,21 @@ Example RoTs - AMD Secure Processor, Trusted Platform Module (TPM), Virtual Trus
 
 ## Trusted Platform Module (TPM) and vTPM
 
-TPM (Trusted Platform Module) is a computer chip (microcontroller) that can securely store artifacts used to authenticate the platform (your PC or laptop). These artifacts can include passwords, certificates, or encryption keys. A TPM can also be used to store platform measurements that help ensure that the platform remains trustworthy. It's an example of a RoT component.
+TPM (Trusted Platform Module) is a computer chip (microcontroller) that can
+securely store artifacts used to authenticate the platform (your PC or laptop).
+These artifacts can include passwords, certificates, or encryption keys. A TPM
+can also be used to store platform measurements that help ensure that the
+platform remains trustworthy. It's an example of a RoT component.
 
-A Virtual Trusted Platform Module (vTPM) is a software-based representation of a physical Trusted Platform Module (TPM) 2.0 chip.
+A Virtual Trusted Platform Module (vTPM) is a software-based representation of
+a physical Trusted Platform Module (TPM) 2.0 chip.
 
 :::{warning}
-**A software vTPM is only as trustworthy as what manages it.** If the vTPM is managed by the hypervisor, then the hypervisor is in the Trusted Computing Base (TCB) — a compromised hypervisor can forge vTPM measurements and attestation reports. This is addressed by placing the vTPM *inside* the TEE using SVSM (Secure VM Service Module), which removes the hypervisor from the TCB entirely.
+**A software vTPM is only as trustworthy as what manages it.** If the vTPM is
+managed by the hypervisor, then the hypervisor is in the Trusted Computing Base
+(TCB) — a compromised hypervisor can forge vTPM measurements and attestation
+reports. This is addressed by placing the vTPM *inside* the TEE using SVSM
+(Secure VM Service Module), which removes the hypervisor from the TCB entirely.
 :::
 
 *[Trusted Computing Group TPM summary](https://trustedcomputinggroup.org/resource/trusted-platform-module-tpm-summary/)*
@@ -53,10 +68,16 @@ New_PCR_Value = SHA256(Old_PCR_Value || New_Measurement)
 
 ## Trusted Computing Base (TCB)
 
-The **Trusted Computing Base** is the set of all hardware, firmware, and software components that you *must trust* for your system's security to hold. In a traditional cloud VM, this includes the hypervisor and host OS — both controlled by the cloud provider.
+The **Trusted Computing Base** is the set of all hardware, firmware, and
+software components that you *must trust* for your system's security to hold.
+In a traditional cloud VM, this includes the hypervisor and host OS, both
+controlled by the cloud provider.
 
 :::{note}
-**KVM collapses the two:** With KVM, the hypervisor is a kernel module inside the host OS. Compromising the host OS also compromises KVM, and vice versa. Throughout this book "host OS + hypervisor" should be read as a single trust domain for KVM-based hypervisor.
+**KVM collapses the two:** With KVM, the hypervisor is a kernel module inside
+the host OS. Compromising the host OS also compromises KVM, and vice versa.
+Throughout this book "host OS + hypervisor" should be read as a single trust
+domain for KVM-based hypervisor.
 :::
 
 ```{figure} ../images/page_15.png
@@ -72,13 +93,20 @@ The **Trusted Computing Base** is the set of all hardware, firmware, and softwar
 
 **Secure Boot** verifies digital signatures before running bootloaders.
 
-- It is a feature of the Unified Extensible Firmware Interface (UEFI). It's used to check bootloaders, key operating system files, and the ROM for any tampering attempts.
-- UEFI firmware has signatures stored in a database and Secure Boot will check those signatures. If the signatures don't match, then something was modified incorrectly and the boot process will halt.
+- It is a feature of the Unified Extensible Firmware Interface (UEFI). It's
+  used to check bootloaders, key operating system files, and the ROM for any
+tampering attempts.
+- UEFI firmware has signatures stored in a database and Secure Boot will check
+  those signatures. If the signatures don't match, then something was modified
+incorrectly and the boot process will halt.
 
 **Trusted Boot** extends this with a chain of verification — each stage checks the next before passing control.
 
-- The bootloader (which we've verified to be trustworthy) will check the digital signature of the operating system kernel before loading it.
-- The verified kernel will then verify every other part of the OS startup process including boot drivers and startup files, to make sure those components are all safe.
+- The bootloader (which we've verified to be trustworthy) will check the
+  digital signature of the operating system kernel before loading it.
+- The verified kernel will then verify every other part of the OS startup
+  process including boot drivers and startup files, to make sure those
+components are all safe.
 
 ```{figure} ../images/page_16.png
 :alt: Secure Boot and Trusted Boot
@@ -87,9 +115,13 @@ The **Trusted Computing Base** is the set of all hardware, firmware, and softwar
 
 ### Measured Boot
 
-Measured boot uses hardware Root of Trust (RoT) eg. TPM to record a cryptographic hash of every stage of the boot process into PCRs. This creates a tamper-evident audit trail that can be verified remotely at any point in time.
+Measured boot uses hardware Root of Trust (RoT) eg. TPM to record a
+cryptographic hash of every stage of the boot process into PCRs. This creates a
+tamper-evident audit trail that can be verified remotely at any point in time.
 
-Measured Boot doesn't *block* anything — instead it **records** everything that runs (eg. into the TPM's PCRs). This enables **remote attestation** — a third party can cryptographically verify the exact software stack that booted.
+Measured Boot doesn't *block* anything, instead it **records** everything that
+runs (eg. into the TPM's PCRs). This enables **remote attestation** where a third
+party can cryptographically verify the exact software stack that booted.
 
 ```{figure} ../images/page_17.png
 :alt: Measured Boot
@@ -98,7 +130,9 @@ Measured Boot doesn't *block* anything — instead it **records** everything tha
 
 ### Summary Comparison
 
-Comparison of boot security mechanisms: Secure Boot and Trusted Boot prevent unauthorized software from running; Measured Boot records what ran and enables remote verification via attestation.
+Comparison of boot security mechanisms: Secure Boot and Trusted Boot prevent
+unauthorised software from running; Measured Boot records what ran and enables
+remote verification via attestation.
 
 ```{figure} ../images/page_18.png
 :alt: Summary Comparison Table — Secure Boot vs Trusted Boot vs Measured Boot
@@ -109,7 +143,10 @@ Comparison of boot security mechanisms: Secure Boot and Trusted Boot prevent una
 
 ## Trusted Execution Environments (TEEs)
 
-A **Trusted Execution Environment (TEE)** is a hardware-enforced, isolated region of a processor that protects code and data from unauthorized access — including from privileged software like the OS, hypervisor, or firmware.
+A **Trusted Execution Environment (TEE)** is a hardware-enforced execution
+environment that provides **runtime isolation** for code and data, protecting them
+from unauthorised access or tampering by privileged software such as the
+operating system, hypervisor, and even firmware.
 
 ```{figure} ../images/page_22.png
 :alt: Trusted Execution Environments definition
@@ -148,11 +185,15 @@ Example: Intel SGX
 
 ### TCB Reduction with Confidential Computing
 
-Confidential Computing dramatically reduces the TCB. The hypervisor and host OS move out of the TCB — you no longer need to trust the cloud provider's software stack.
+Confidential Computing dramatically reduces the TCB. The hypervisor and host OS
+move out of the TCB. You no longer need to trust the cloud provider's software
+stack.
 
 ```{figure} ../images/page_24.png
 :alt: TCB reduction with Confidential Computing
 :align: center
 ```
 
-The next section shows how each TEE vendor — AMD SEV-SNP, Intel TDX, and Intel SGX — implements these concepts in practice, and how choices like vTPM placement affect what remains in the TCB.
+The next section shows how each TEE vendor — AMD SEV-SNP, Intel TDX, and Intel
+SGX, implements these concepts in practice, and how choices like vTPM
+placement affect what remains in the TCB.

@@ -1,17 +1,39 @@
-# Remote Attestation
+# Remote Attestation for Confidential Computing
 
-Confidential computing has two dimensions: **runtime isolation** and **attestation**.
+**Remote attestation** lets a workload owner cryptographically verify that an
+expected software stack is running inside a genuine Trusted Execution
+Environment (TEE) before releasing secrets or sensitive data. It complements
+the **runtime isolation** dimension of confidential computing.
 
 :::{note}
 **What does "remote" mean in remote attestation?**
 
-The term is used differently across the industry. Intel historically defines "remote" as *outside the CPU package* — i.e., any entity other than the CPU itself. The CCC, Red Hat, and most cloud-native practitioners use "remote" to mean *a party not under the control of the cloud infrastructure operator* — a verifier on a completely different network, beyond the provider's administrative reach. This book uses the CCC/industry definition: remote attestation lets a *workload owner* verify a TEE without trusting the cloud provider's own attestation infrastructure.
+The term is used differently across the industry. Intel historically defines
+"remote" as *outside the CPU package* — i.e., any entity other than the CPU
+itself. The CCC, Red Hat, and most cloud-native practitioners use "remote" to
+mean *a party not under the control of the cloud infrastructure operator* — a
+verifier on a completely different network, beyond the provider's
+administrative reach. This book uses the CCC/industry definition: remote
+attestation lets a *workload owner* verify a TEE without trusting the cloud
+provider's own attestation infrastructure.
 :::
 
 
-Runtime isolation — technologies like memory encryption — creates a boundary between the TEE and the untrusted world, protecting data while in use. But isolation alone doesn't address a fundamental problem: a TEE's initial state is typically configured by an untrusted host (for example, a hypervisor setting initial guest memory). Because that initial configuration is highly significant, a TEE is not considered secure unless those properties are validated.
+Runtime isolation provided by a TEE alone does not solve a fundamental problem:
+how can you verify that the TEE is genuine and started in a trusted state?
+Since a TEE is typically created and initialised by an untrusted host (for
+example, a hypervisor configuring the guest's initial state), its security
+depends on verifying that the TEE was instantiated with the expected software
+and configuration before trusting it.
 
-Attestation closes this gap. It *extends trust from a hardware root of trust to a TEE*: the hardware root of trust attests to the TEE's configuration and initial state, typically by signing a report with a key tied to the hardware manufacturer. This is what allows a remote party to confirm they are communicating with a genuine, unmodified TEE running the expected software.
+This is where **remote attestation** comes in. Remote attestation allows the
+TEE to produce cryptographic evidence of its identity and initial state. A
+remote verifier validates this evidence against expected measurements before
+establishing trust or releasing sensitive resources such as encryption keys,
+secrets, or credentials.
+
+Remote attestation is what allows a remote party to confirm they are
+communicating with a genuine, unmodified TEE running the expected software.
 
 ---
 
@@ -25,7 +47,9 @@ The term "attestation" is overloaded and worth clarifying before going further:
 | **Confidential attestation** | Blocks secret delivery; scoped to the TEE's initial state |
 | **SPIFFE/SPIRE workload attestation** | One component attesting to properties of another |
 
-The parties capable of validating a host environment versus a guest TEE environment are usually distinct, making these separate processes. This chapter focuses on **confidential attestation**.
+The parties capable of validating a host environment versus a guest TEE
+environment are usually distinct, making these separate processes. This chapter
+focuses on **confidential attestation**.
 
 ---
 
@@ -43,9 +67,14 @@ Remote attestation answers all three questions cryptographically.
 
 ## The IETF RATS Framework
 
-The industry has standardized remote attestation procedures through the **IETF RATS (Remote ATtestation procedureS)** framework ([RFC 9334](https://www.rfc-editor.org/rfc/rfc9334)).
+The industry has standardized remote attestation procedures through the **IETF
+RATS (Remote ATtestation procedureS)** framework ([RFC
+9334](https://www.rfc-editor.org/rfc/rfc9334)).
 
-The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verifier* checks against *Reference Values* from a Reference Value Provider. The *Verifier* returns an Attestation Result to the *Relying Party*, which then decides whether to release a resource (e.g., a decryption key).
+The *Attester* (TEE) produces *Evidence* (measurements/claims), which the
+*Verifier* checks against *Reference Values* from a Reference Value Provider.
+The *Verifier* returns an Attestation Result to the *Relying Party*, which then
+decides whether to release a resource (e.g., a decryption key).
 
 ### Key Roles and Artifacts
 
@@ -57,7 +86,9 @@ The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verif
 | **Reference Value Provider** (role) | Supplies the "golden" reference measurements | Firmware vendor, OS publisher |
 | **Relying Party** (role) | Uses the attestation result to make decisions | Application owner, Resource gatekeeper |
 
-Trustee (Chapter 11) implements the Reference Value Provider role as a component called the **Reference Value Provider Service (RVPS)**. That name is Trustee-specific, not an IETF term.
+Trustee (Chapter 11) implements the Reference Value Provider role as a
+component called the **Reference Value Provider Service (RVPS)**. That name is
+Trustee-specific, not an IETF term.
 
 :::{note}
 **Evidence vs attestation report — terminology clarification**
@@ -67,7 +98,9 @@ This chapter uses the IETF RATS term **Evidence** (capitalised) for the abstract
 - AMD SEV-SNP produces an **SNP attestation report** (signed by the VCEK)
 - Intel TDX produces a **TDX Quote** (signed by the Quoting Enclave)
 
-When you see "attestation report" elsewhere in this book or in vendor documentation, it refers to one of these concrete Evidence artifacts. The terms are used interchangeably; context determines which hardware format is meant.
+When you see "attestation report" elsewhere in this book or in vendor
+documentation, it refers to one of these concrete Evidence artifacts. The terms
+are used interchangeably; context determines which hardware format is meant.
 :::
 ---
 
@@ -148,11 +181,24 @@ Every update to a measured component (firmware, kernel, initramfs, kernel comman
 
 ### TCB versioning and recovery
 
-Hardware vendors patch their own platform security (microcode, SNP firmware, the TDX module). The platform's **TCB version** is reported inside the Evidence, and the signing key itself is bound to it (AMD's VCEK is derived per TCB version). Verifier policy should enforce a *minimum* TCB version. This is how the ecosystem recovers from hardware vulnerabilities: the vendor ships fixed firmware, and verifiers raise the required TCB floor, causing unpatched hosts to fail attestation. A host that lags on firmware updates will (correctly) stop receiving secrets.
+Hardware vendors patch their own platform security (microcode, SNP firmware,
+the TDX module). The platform's **TCB version** is reported inside the
+Evidence, and the signing key itself is bound to it (AMD's VCEK is derived per
+TCB version). Verifier policy should enforce a *minimum* TCB version. This is
+how the ecosystem recovers from hardware vulnerabilities: the vendor ships
+fixed firmware, and verifiers raise the required TCB floor, causing unpatched
+hosts to fail attestation. A host that lags on firmware updates will
+(correctly) stop receiving secrets.
 
 ### Policy, not just matching
 
-Real verifiers don't hard-compare every field. They evaluate Evidence against a **policy** (Trustee's Attestation Service uses [OPA](https://www.openpolicyagent.org/) Rego policies) that decides *which* claims matter: exact launch measurement pinning, minimum TCB version, allowed hardware models, debug-mode disallowed, and so on. Looser policies ease operations; tighter policies narrow the attack surface. Chapter 11 shows where these policies live in Trustee.
+Real verifiers don't hard-compare every field. They evaluate Evidence against a
+**policy** (Trustee's Attestation Service uses
+[OPA](https://www.openpolicyagent.org/) Rego policies) that decides *which*
+claims matter: exact launch measurement pinning, minimum TCB version, allowed
+hardware models, debug-mode disallowed, and so on. Looser policies ease
+operations; tighter policies narrow the attack surface. Chapter 11 shows where
+these policies live in Trustee.
 
 ---
 

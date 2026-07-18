@@ -1,12 +1,20 @@
 # Confidential Containers (CoCo)
 
+Confidential Containers protect Kubernetes pods and their data in use by
+running containers inside hardware-backed Trusted Execution Environments
+(TEEs). The CNCF Confidential Containers (CoCo) project combines Kata
+Containers, confidential virtual machines, remote attestation, and secret
+delivery into a cloud-native deployment model.
+
 ## What Are Confidential Containers?
 
-Confidential Containers — a generic term for containers deployed inside Trusted Execution Environments (TEEs).
+**Confidential containers** is the generic term for containers deployed inside Trusted Execution Environments.
 
 ## CNCF Confidential Containers (CoCo) Project
 
-The CNCF CoCo project provides a common foundation for deploying a pod inside a CVM (using [Kata Containers](https://katacontainers.io/)) on any Kubernetes cluster, and includes Trustee as the remote attestation service.
+The CNCF CoCo project provides a common foundation for deploying a pod inside a
+CVM (using [Kata Containers](https://katacontainers.io/)) on any Kubernetes
+cluster, and includes Trustee as the remote attestation service.
 
 ```{figure} ../images/page_57.png
 :alt: CNCF Confidential Containers Project overview
@@ -60,7 +68,13 @@ CoCo **protects the workload from the host**.
 
 ## Architecture: CoCo/bare-metal (Local Hypervisor)
 
-The Confidential VM (CVM) runs on the worker node. Inside the CVM: kata-agent manages the lifecycle of the pod (containers), image-rs (the container image management library from guest-components, linked into kata-agent) downloads the container images, the Confidential Data Hub (CDH) serves as the secret retrieval proxy, and the Attestation Agent (AA) handles the attestation process. Container images are always downloaded inside the CVM, never on the host.
+The Confidential VM (CVM) runs on the worker node. Inside the CVM: kata-agent
+manages the lifecycle of the pod (containers), image-rs (the container image
+management library from guest-components, linked into kata-agent) downloads the
+container images, the Confidential Data Hub (CDH) serves as the secret
+retrieval proxy, and the Attestation Agent (AA) handles the attestation
+process. Container images are always downloaded inside the CVM, never on the
+host.
 
 ```{figure} ../images/page_59.png
 :alt: High Level Architecture — CoCo/bare-metal
@@ -176,4 +190,3 @@ Following are the key CVM requirements for CoCo:
 ### Encrypted Ephemeral Disk
 
 For container image layers and ephemeral writes, a **LUKS-encrypted disk** uses an **ephemeral key** generated inside the TEE at runtime — never persisted, never leaving the TEE.
-

@@ -1,6 +1,7 @@
-# TEE Technologies
+# TEE Technologies: AMD SEV-SNP, Intel TDX, and Intel SGX
 
-This section covers how the major TEE implementations — AMD SEV-SNP, Intel TDX, and Intel SGX — realise the concepts introduced in the previous section: measured boot, TCB configurations, and the certificate chains that underpin remote attestation.
+This chapter compares the major Trusted Execution Environment (TEE) technologies — AMD SEV-SNP, Intel TDX, and Intel SGX,
+and explains how they implement memory isolation, measured boot, TCB configurations, certificate chains, and remote attestation.
 
 ---
 

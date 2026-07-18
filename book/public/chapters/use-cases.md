@@ -1,6 +1,6 @@
-# Use Cases
+# Confidential Computing Use Cases
 
-Here are the primary use cases of confidential computing.
+Confidential computing is most useful when sensitive data or code must be processed on infrastructure that the workload owner does not fully trust. Common use cases include confidential AI, privacy-preserving data collaboration, secure cloud migration, regulated workloads, and protected blockchain or Web3 services.
 
 ## 1. Secure AI Inference
 

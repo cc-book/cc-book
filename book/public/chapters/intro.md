@@ -1,4 +1,4 @@
-# Confidential Computing Deep Dive
+# Confidential Computing: A Practical Deep Dive
 
 **Author:** Pradipta Banerjee, Project Maintainer — Confidential Containers
 
@@ -6,7 +6,11 @@
 
 ## About This Book
 
-This book is a comprehensive deep dive into **Confidential Computing**. It covers the theory, architecture, components, and use cases to understand and work with confidential computing.
+Learn how **confidential computing protects data in use** with hardware-based
+Trusted Execution Environments (TEEs). This practical guide explains remote
+attestation, AMD SEV-SNP, Intel TDX, confidential virtual machines (CVMs), and
+CNCF Confidential Containers (CoCo), then puts the concepts into practice with
+Kubernetes and Azure labs.
 
 The content is structured for engineers, architects, and security practitioners who want to understand:
 

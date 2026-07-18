@@ -1,6 +1,9 @@
-# Hands-On Labs
+# Confidential Computing Hands-On Labs
 
-This chapter provides practical exercises to complement the concepts covered in previous chapters. The labs are designed to be independent — you can work through them in order or jump to the one most relevant to your environment.
+These hands-on confidential computing labs show how to deploy and attest
+confidential virtual machines and CNCF Confidential Containers. You will use
+Azure, Kubernetes, Trustee, cococtl, and peer pods in practical exercises that
+can be completed in order or independently.
 
 | Lab | What you'll do | Hardware needed |
 |-----|---------------|-----------------|

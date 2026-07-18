@@ -4,7 +4,7 @@ Source: https://cc-book.github.io/cc-book/
 
 ---
 
-# Confidential Computing Deep Dive
+# Confidential Computing: A Practical Deep Dive
 
 **Author:** Pradipta Banerjee, Project Maintainer — Confidential Containers
 
@@ -12,7 +12,7 @@ Source: https://cc-book.github.io/cc-book/
 
 ## About This Book
 
-This book is a comprehensive deep dive into **Confidential Computing**. It covers the theory, architecture, components, and use cases to understand and work with confidential computing.
+Learn how **confidential computing protects data in use** with hardware-based Trusted Execution Environments (TEEs). This practical guide explains remote attestation, AMD SEV-SNP, Intel TDX, confidential virtual machines (CVMs), and CNCF Confidential Containers (CoCo), then puts the concepts into practice with Kubernetes and Azure labs.
 
 The content is structured for engineers, architects, and security practitioners who want to understand:
 
@@ -47,13 +47,19 @@ No prior knowledge of confidential computing or hardware security is assumed.
 
 # The Trust Boundary Problem
 
-Cloud computing promises flexibility and scale. But it comes at a cost: when you run workloads on someone else's infrastructure, you must trust the infrastructure owner. Let's examine what that trust actually means, and why it is a deeper problem than it first appears.
+Running workloads on third-party infrastructure (eg. in public cloud) provides
+flexibility and scale.  But it comes at a cost: when you run workloads on
+someone else's infrastructure, you must trust the infrastructure owner. Let's
+examine what that trust actually means, and why it is a deeper problem than it
+first appears.
 
 ---
 
 ## Trust Boundary in Traditional Virtualisation
 
-In traditional virtualisation, the provider fully controls everything below the guest VM — the hypervisor, host OS, device firmware, and hardware. This means the provider can:
+In traditional virtualisation, the provider fully controls everything below the
+guest VM — the hypervisor, host OS, device firmware, and hardware. This means
+the provider can:
 
 - Inspect guest memory
 - Modify guest execution
@@ -86,7 +92,9 @@ The table below shows common security mechanisms, their intended protections and
 ```{admonition} The Core Problem
 :class: warning
 
-All software-based security controls can be bypassed by a sufficiently privileged attacker. The hypervisor sits *above* all guest software — it is the ultimate arbiter of what the guest sees and does.
+All software-based security controls can be bypassed by a sufficiently
+privileged attacker. The hypervisor sits *above* all guest software. It is the
+ultimate arbiter of what the guest sees and does.
 
 **Software cannot protect itself from the software below it.**
 
@@ -215,6 +223,8 @@ The tenant trust boundary now extends *down to the hardware*, bypassing the hype
 
 # What is Confidential Computing?
 
+Before getting to confidential computing, we must understand data security challenges and solutions.
+
 ## The Data Security Triad
 
 Modern data security is often described using three pillars:
@@ -307,9 +317,9 @@ CC does **not** protect against vulnerabilities *within* your own application co
 
 ---
 
-# Use Cases
+# Confidential Computing Use Cases
 
-Here are the primary use cases of confidential computing.
+Confidential computing is most useful when sensitive data or code must be processed on infrastructure that the workload owner does not fully trust. Common use cases include confidential AI, privacy-preserving data collaboration, secure cloud migration, regulated workloads, and protected blockchain or Web3 services.
 
 ## 1. Secure AI Inference
 
@@ -392,9 +402,10 @@ This enables a clean separation that was previously impossible:
 
 ---
 
-# Building Blocks
+# Confidential Computing Building Blocks
 
-Before diving into Confidential Containers, it helps to understand the foundational concepts and technologies that make confidential computing possible.
+Confidential computing combines hardware and software building blocks to protect data in use: a Root of Trust, a minimal Trusted Computing Base (TCB), Trusted Execution Environments (TEEs), measured boot, and remote attestation.
+Understanding how these pieces establish and verify trust is essential before starting to use confidential computing solutions.
 
 This section covers four areas:
 
@@ -406,7 +417,13 @@ This section covers four areas:
 
 ---
 
-# Concepts
+# Confidential Computing Security Concepts
+
+The security model behind confidential computing depends on several connected
+concepts: Roots of Trust establish a trustworthy foundation, the Trusted
+Computing Base defines what must be trusted, and boot measurements record the
+software loaded into a Trusted Execution Environment (TEE). This chapter
+explains each concept and how it contributes to protecting data in use.
 
 ## Root of Trust (RoT)
 
@@ -430,12 +447,21 @@ Example RoTs - AMD Secure Processor, Trusted Platform Module (TPM), Virtual Trus
 
 ## Trusted Platform Module (TPM) and vTPM
 
-TPM (Trusted Platform Module) is a computer chip (microcontroller) that can securely store artifacts used to authenticate the platform (your PC or laptop). These artifacts can include passwords, certificates, or encryption keys. A TPM can also be used to store platform measurements that help ensure that the platform remains trustworthy. It's an example of a RoT component.
+TPM (Trusted Platform Module) is a computer chip (microcontroller) that can
+securely store artifacts used to authenticate the platform (your PC or laptop).
+These artifacts can include passwords, certificates, or encryption keys. A TPM
+can also be used to store platform measurements that help ensure that the
+platform remains trustworthy. It's an example of a RoT component.
 
-A Virtual Trusted Platform Module (vTPM) is a software-based representation of a physical Trusted Platform Module (TPM) 2.0 chip.
+A Virtual Trusted Platform Module (vTPM) is a software-based representation of
+a physical Trusted Platform Module (TPM) 2.0 chip.
 
 :::{warning}
-**A software vTPM is only as trustworthy as what manages it.** If the vTPM is managed by the hypervisor, then the hypervisor is in the Trusted Computing Base (TCB) — a compromised hypervisor can forge vTPM measurements and attestation reports. This is addressed by placing the vTPM *inside* the TEE using SVSM (Secure VM Service Module), which removes the hypervisor from the TCB entirely.
+**A software vTPM is only as trustworthy as what manages it.** If the vTPM is
+managed by the hypervisor, then the hypervisor is in the Trusted Computing Base
+(TCB) — a compromised hypervisor can forge vTPM measurements and attestation
+reports. This is addressed by placing the vTPM *inside* the TEE using SVSM
+(Secure VM Service Module), which removes the hypervisor from the TCB entirely.
 :::
 
 *[Trusted Computing Group TPM summary](https://trustedcomputinggroup.org/resource/trusted-platform-module-tpm-summary/)*
@@ -461,10 +487,16 @@ New_PCR_Value = SHA256(Old_PCR_Value || New_Measurement)
 
 ## Trusted Computing Base (TCB)
 
-The **Trusted Computing Base** is the set of all hardware, firmware, and software components that you *must trust* for your system's security to hold. In a traditional cloud VM, this includes the hypervisor and host OS — both controlled by the cloud provider.
+The **Trusted Computing Base** is the set of all hardware, firmware, and
+software components that you *must trust* for your system's security to hold.
+In a traditional cloud VM, this includes the hypervisor and host OS, both
+controlled by the cloud provider.
 
 :::{note}
-**KVM collapses the two:** With KVM, the hypervisor is a kernel module inside the host OS. Compromising the host OS also compromises KVM, and vice versa. Throughout this book "host OS + hypervisor" should be read as a single trust domain for KVM-based hypervisor.
+**KVM collapses the two:** With KVM, the hypervisor is a kernel module inside
+the host OS. Compromising the host OS also compromises KVM, and vice versa.
+Throughout this book "host OS + hypervisor" should be read as a single trust
+domain for KVM-based hypervisor.
 :::
 
 [diagram]
@@ -477,27 +509,40 @@ The **Trusted Computing Base** is the set of all hardware, firmware, and softwar
 
 **Secure Boot** verifies digital signatures before running bootloaders.
 
-- It is a feature of the Unified Extensible Firmware Interface (UEFI). It's used to check bootloaders, key operating system files, and the ROM for any tampering attempts.
-- UEFI firmware has signatures stored in a database and Secure Boot will check those signatures. If the signatures don't match, then something was modified incorrectly and the boot process will halt.
+- It is a feature of the Unified Extensible Firmware Interface (UEFI). It's
+  used to check bootloaders, key operating system files, and the ROM for any
+tampering attempts.
+- UEFI firmware has signatures stored in a database and Secure Boot will check
+  those signatures. If the signatures don't match, then something was modified
+incorrectly and the boot process will halt.
 
 **Trusted Boot** extends this with a chain of verification — each stage checks the next before passing control.
 
-- The bootloader (which we've verified to be trustworthy) will check the digital signature of the operating system kernel before loading it.
-- The verified kernel will then verify every other part of the OS startup process including boot drivers and startup files, to make sure those components are all safe.
+- The bootloader (which we've verified to be trustworthy) will check the
+  digital signature of the operating system kernel before loading it.
+- The verified kernel will then verify every other part of the OS startup
+  process including boot drivers and startup files, to make sure those
+components are all safe.
 
 [diagram]
 
 ### Measured Boot
 
-Measured boot uses hardware Root of Trust (RoT) eg. TPM to record a cryptographic hash of every stage of the boot process into PCRs. This creates a tamper-evident audit trail that can be verified remotely at any point in time.
+Measured boot uses hardware Root of Trust (RoT) eg. TPM to record a
+cryptographic hash of every stage of the boot process into PCRs. This creates a
+tamper-evident audit trail that can be verified remotely at any point in time.
 
-Measured Boot doesn't *block* anything — instead it **records** everything that runs (eg. into the TPM's PCRs). This enables **remote attestation** — a third party can cryptographically verify the exact software stack that booted.
+Measured Boot doesn't *block* anything, instead it **records** everything that
+runs (eg. into the TPM's PCRs). This enables **remote attestation** where a third
+party can cryptographically verify the exact software stack that booted.
 
 [diagram]
 
 ### Summary Comparison
 
-Comparison of boot security mechanisms: Secure Boot and Trusted Boot prevent unauthorized software from running; Measured Boot records what ran and enables remote verification via attestation.
+Comparison of boot security mechanisms: Secure Boot and Trusted Boot prevent
+unauthorised software from running; Measured Boot records what ran and enables
+remote verification via attestation.
 
 [diagram]
 
@@ -505,7 +550,10 @@ Comparison of boot security mechanisms: Secure Boot and Trusted Boot prevent una
 
 ## Trusted Execution Environments (TEEs)
 
-A **Trusted Execution Environment (TEE)** is a hardware-enforced, isolated region of a processor that protects code and data from unauthorized access — including from privileged software like the OS, hypervisor, or firmware.
+A **Trusted Execution Environment (TEE)** is a hardware-enforced execution
+environment that provides **runtime isolation** for code and data, protecting them
+from unauthorised access or tampering by privileged software such as the
+operating system, hypervisor, and even firmware.
 
 [diagram]
 
@@ -538,18 +586,23 @@ Example: Intel SGX
 
 ### TCB Reduction with Confidential Computing
 
-Confidential Computing dramatically reduces the TCB. The hypervisor and host OS move out of the TCB — you no longer need to trust the cloud provider's software stack.
+Confidential Computing dramatically reduces the TCB. The hypervisor and host OS
+move out of the TCB. You no longer need to trust the cloud provider's software
+stack.
 
 [diagram]
 
-The next section shows how each TEE vendor — AMD SEV-SNP, Intel TDX, and Intel SGX — implements these concepts in practice, and how choices like vTPM placement affect what remains in the TCB.
+The next section shows how each TEE vendor — AMD SEV-SNP, Intel TDX, and Intel
+SGX, implements these concepts in practice, and how choices like vTPM
+placement affect what remains in the TCB.
 
 
 ---
 
-# TEE Technologies
+# TEE Technologies: AMD SEV-SNP, Intel TDX, and Intel SGX
 
-This section covers how the major TEE implementations — AMD SEV-SNP, Intel TDX, and Intel SGX — realise the concepts introduced in the previous section: measured boot, TCB configurations, and the certificate chains that underpin remote attestation.
+This chapter compares the major Trusted Execution Environment (TEE) technologies — AMD SEV-SNP, Intel TDX, and Intel SGX,
+and explains how they implement memory isolation, measured boot, TCB configurations, certificate chains, and remote attestation.
 
 ---
 
@@ -715,20 +768,42 @@ Beyond AMD and Intel on x86, VM-based TEEs exist or are emerging on every major 
 
 ---
 
-# Remote Attestation
+# Remote Attestation for Confidential Computing
 
-Confidential computing has two dimensions: **runtime isolation** and **attestation**.
+**Remote attestation** lets a workload owner cryptographically verify that an
+expected software stack is running inside a genuine Trusted Execution
+Environment (TEE) before releasing secrets or sensitive data. It complements
+the **runtime isolation** dimension of confidential computing.
 
 :::{note}
 **What does "remote" mean in remote attestation?**
 
-The term is used differently across the industry. Intel historically defines "remote" as *outside the CPU package* — i.e., any entity other than the CPU itself. The CCC, Red Hat, and most cloud-native practitioners use "remote" to mean *a party not under the control of the cloud infrastructure operator* — a verifier on a completely different network, beyond the provider's administrative reach. This book uses the CCC/industry definition: remote attestation lets a *workload owner* verify a TEE without trusting the cloud provider's own attestation infrastructure.
+The term is used differently across the industry. Intel historically defines
+"remote" as *outside the CPU package* — i.e., any entity other than the CPU
+itself. The CCC, Red Hat, and most cloud-native practitioners use "remote" to
+mean *a party not under the control of the cloud infrastructure operator* — a
+verifier on a completely different network, beyond the provider's
+administrative reach. This book uses the CCC/industry definition: remote
+attestation lets a *workload owner* verify a TEE without trusting the cloud
+provider's own attestation infrastructure.
 :::
 
 
-Runtime isolation — technologies like memory encryption — creates a boundary between the TEE and the untrusted world, protecting data while in use. But isolation alone doesn't address a fundamental problem: a TEE's initial state is typically configured by an untrusted host (for example, a hypervisor setting initial guest memory). Because that initial configuration is highly significant, a TEE is not considered secure unless those properties are validated.
+Runtime isolation provided by a TEE alone does not solve a fundamental problem:
+how can you verify that the TEE is genuine and started in a trusted state?
+Since a TEE is typically created and initialised by an untrusted host (for
+example, a hypervisor configuring the guest's initial state), its security
+depends on verifying that the TEE was instantiated with the expected software
+and configuration before trusting it.
 
-Attestation closes this gap. It *extends trust from a hardware root of trust to a TEE*: the hardware root of trust attests to the TEE's configuration and initial state, typically by signing a report with a key tied to the hardware manufacturer. This is what allows a remote party to confirm they are communicating with a genuine, unmodified TEE running the expected software.
+This is where **remote attestation** comes in. Remote attestation allows the
+TEE to produce cryptographic evidence of its identity and initial state. A
+remote verifier validates this evidence against expected measurements before
+establishing trust or releasing sensitive resources such as encryption keys,
+secrets, or credentials.
+
+Remote attestation is what allows a remote party to confirm they are
+communicating with a genuine, unmodified TEE running the expected software.
 
 ---
 
@@ -742,7 +817,9 @@ The term "attestation" is overloaded and worth clarifying before going further:
 | **Confidential attestation** | Blocks secret delivery; scoped to the TEE's initial state |
 | **SPIFFE/SPIRE workload attestation** | One component attesting to properties of another |
 
-The parties capable of validating a host environment versus a guest TEE environment are usually distinct, making these separate processes. This chapter focuses on **confidential attestation**.
+The parties capable of validating a host environment versus a guest TEE
+environment are usually distinct, making these separate processes. This chapter
+focuses on **confidential attestation**.
 
 ---
 
@@ -760,9 +837,14 @@ Remote attestation answers all three questions cryptographically.
 
 ## The IETF RATS Framework
 
-The industry has standardized remote attestation procedures through the **IETF RATS (Remote ATtestation procedureS)** framework ([RFC 9334](https://www.rfc-editor.org/rfc/rfc9334)).
+The industry has standardized remote attestation procedures through the **IETF
+RATS (Remote ATtestation procedureS)** framework ([RFC
+9334](https://www.rfc-editor.org/rfc/rfc9334)).
 
-The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verifier* checks against *Reference Values* from a Reference Value Provider. The *Verifier* returns an Attestation Result to the *Relying Party*, which then decides whether to release a resource (e.g., a decryption key).
+The *Attester* (TEE) produces *Evidence* (measurements/claims), which the
+*Verifier* checks against *Reference Values* from a Reference Value Provider.
+The *Verifier* returns an Attestation Result to the *Relying Party*, which then
+decides whether to release a resource (e.g., a decryption key).
 
 ### Key Roles and Artifacts
 
@@ -774,7 +856,9 @@ The *Attester* (TEE) produces *Evidence* (measurements/claims), which the *Verif
 | **Reference Value Provider** (role) | Supplies the "golden" reference measurements | Firmware vendor, OS publisher |
 | **Relying Party** (role) | Uses the attestation result to make decisions | Application owner, Resource gatekeeper |
 
-Trustee (Chapter 11) implements the Reference Value Provider role as a component called the **Reference Value Provider Service (RVPS)**. That name is Trustee-specific, not an IETF term.
+Trustee (Chapter 11) implements the Reference Value Provider role as a
+component called the **Reference Value Provider Service (RVPS)**. That name is
+Trustee-specific, not an IETF term.
 
 :::{note}
 **Evidence vs attestation report — terminology clarification**
@@ -784,7 +868,9 @@ This chapter uses the IETF RATS term **Evidence** (capitalised) for the abstract
 - AMD SEV-SNP produces an **SNP attestation report** (signed by the VCEK)
 - Intel TDX produces a **TDX Quote** (signed by the Quoting Enclave)
 
-When you see "attestation report" elsewhere in this book or in vendor documentation, it refers to one of these concrete Evidence artifacts. The terms are used interchangeably; context determines which hardware format is meant.
+When you see "attestation report" elsewhere in this book or in vendor
+documentation, it refers to one of these concrete Evidence artifacts. The terms
+are used interchangeably; context determines which hardware format is meant.
 :::
 ---
 
@@ -859,11 +945,24 @@ Every update to a measured component (firmware, kernel, initramfs, kernel comman
 
 ### TCB versioning and recovery
 
-Hardware vendors patch their own platform security (microcode, SNP firmware, the TDX module). The platform's **TCB version** is reported inside the Evidence, and the signing key itself is bound to it (AMD's VCEK is derived per TCB version). Verifier policy should enforce a *minimum* TCB version. This is how the ecosystem recovers from hardware vulnerabilities: the vendor ships fixed firmware, and verifiers raise the required TCB floor, causing unpatched hosts to fail attestation. A host that lags on firmware updates will (correctly) stop receiving secrets.
+Hardware vendors patch their own platform security (microcode, SNP firmware,
+the TDX module). The platform's **TCB version** is reported inside the
+Evidence, and the signing key itself is bound to it (AMD's VCEK is derived per
+TCB version). Verifier policy should enforce a *minimum* TCB version. This is
+how the ecosystem recovers from hardware vulnerabilities: the vendor ships
+fixed firmware, and verifiers raise the required TCB floor, causing unpatched
+hosts to fail attestation. A host that lags on firmware updates will
+(correctly) stop receiving secrets.
 
 ### Policy, not just matching
 
-Real verifiers don't hard-compare every field. They evaluate Evidence against a **policy** (Trustee's Attestation Service uses [OPA](https://www.openpolicyagent.org/) Rego policies) that decides *which* claims matter: exact launch measurement pinning, minimum TCB version, allowed hardware models, debug-mode disallowed, and so on. Looser policies ease operations; tighter policies narrow the attack surface. Chapter 11 shows where these policies live in Trustee.
+Real verifiers don't hard-compare every field. They evaluate Evidence against a
+**policy** (Trustee's Attestation Service uses
+[OPA](https://www.openpolicyagent.org/) Rego policies) that decides *which*
+claims matter: exact launch measurement pinning, minimum TCB version, allowed
+hardware models, debug-mode disallowed, and so on. Looser policies ease
+operations; tighter policies narrow the attack surface. Chapter 11 shows where
+these policies live in Trustee.
 
 ---
 
@@ -872,6 +971,7 @@ Real verifiers don't hard-compare every field. They evaluate Evidence against a 
 - **Freshness:** Always use nonces in attestation to prevent replay attacks.
 - **Revocation:** If a CPU is found vulnerable, AMD/Intel can revoke VCEK/PCK certificates. Verifiers should check revocation lists.
 - **Third-Party Trust:** When using cloud-provided attestation services, you trust the cloud provider's attestation infrastructure. Self-hosted Trustee eliminates this dependency. Trustee is covered in detail in Chapter 11, along with its integration into the CoCo attestation flow.
+
 
 ---
 
@@ -1229,13 +1329,21 @@ The chapters that follow cover how CoCo build on this foundation.
 
 # Confidential Containers (CoCo)
 
+Confidential Containers protect Kubernetes pods and their data in use by
+running containers inside hardware-backed Trusted Execution Environments
+(TEEs). The CNCF Confidential Containers (CoCo) project combines Kata
+Containers, confidential virtual machines, remote attestation, and secret
+delivery into a cloud-native deployment model.
+
 ## What Are Confidential Containers?
 
-Confidential Containers — a generic term for containers deployed inside Trusted Execution Environments (TEEs).
+**Confidential containers** is the generic term for containers deployed inside Trusted Execution Environments.
 
 ## CNCF Confidential Containers (CoCo) Project
 
-The CNCF CoCo project provides a common foundation for deploying a pod inside a CVM (using [Kata Containers](https://katacontainers.io/)) on any Kubernetes cluster, and includes Trustee as the remote attestation service.
+The CNCF CoCo project provides a common foundation for deploying a pod inside a
+CVM (using [Kata Containers](https://katacontainers.io/)) on any Kubernetes
+cluster, and includes Trustee as the remote attestation service.
 
 [diagram]
 
@@ -1286,7 +1394,13 @@ CoCo **protects the workload from the host**.
 
 ## Architecture: CoCo/bare-metal (Local Hypervisor)
 
-The Confidential VM (CVM) runs on the worker node. Inside the CVM: kata-agent manages the lifecycle of the pod (containers), image-rs (the container image management library from guest-components, linked into kata-agent) downloads the container images, the Confidential Data Hub (CDH) serves as the secret retrieval proxy, and the Attestation Agent (AA) handles the attestation process. Container images are always downloaded inside the CVM, never on the host.
+The Confidential VM (CVM) runs on the worker node. Inside the CVM: kata-agent
+manages the lifecycle of the pod (containers), image-rs (the container image
+management library from guest-components, linked into kata-agent) downloads the
+container images, the Confidential Data Hub (CDH) serves as the secret
+retrieval proxy, and the Attestation Agent (AA) handles the attestation
+process. Container images are always downloaded inside the CVM, never on the
+host.
 
 [diagram]
 
@@ -1394,12 +1508,16 @@ Following are the key CVM requirements for CoCo:
 For container image layers and ephemeral writes, a **LUKS-encrypted disk** uses an **ephemeral key** generated inside the TEE at runtime — never persisted, never leaving the TEE.
 
 
-
 ---
 
-# Confidential Cluster
+# Confidential Kubernetes Clusters
 
-A **Confidential Cluster** is a Kubernetes cluster where **Confidential Virtual Machines (CVMs)** serve as Kubernetes nodes — both **worker nodes** (running workloads) and, in a full deployment, **control plane nodes** (API server, etcd, scheduler). Every node running inside a CVM means the cloud provider and infrastructure administrator cannot inspect node memory, including workloads, secrets, and cluster state.
+A **confidential Kubernetes cluster** uses **Confidential Virtual Machines
+(CVMs)** as Kubernetes nodes — both **worker nodes** that run workloads and, in
+a full deployment, **control plane nodes** that host the API server, etcd, and
+scheduler. Running every node inside a CVM prevents the cloud provider and
+infrastructure administrator from inspecting node memory, including workloads,
+secrets, and cluster state.
 
 [diagram]
 
@@ -1499,11 +1617,16 @@ All nodes, including control plane nodes run inside CVMs.
 
 ---
 
+
 ---
 
-# Trustee
+# Trustee: Remote Attestation and Secret Management
 
-[Trustee](https://github.com/confidential-containers/trustee) is the remote attestation solution for confidential containers and confidential VMs.
+[Trustee](https://github.com/confidential-containers/trustee) is the CNCF
+Confidential Containers remote attestation and secret-management solution for
+confidential containers and confidential virtual machines (CVMs). It verifies
+attestation evidence and releases keys, credentials, or other protected
+resources only to workloads that satisfy policy.
 
 Trustee implements the **Relying Party** and **Verifier** roles from the IETF RATS architecture, and consists of three sub-components:
 
@@ -1525,13 +1648,19 @@ There are also few other helper components inside the TEE:
 
 ## Architecture
 
-The CVM's Attestation Agent (AA) sends attestation evidence to the KBS. The KBS forwards it to the AS for verification against the RVPS. Upon a positive result, the KBS releases the requested resource (e.g., a decryption key) from the KMS backend.
+The CVM's Attestation Agent (AA) sends attestation evidence to the KBS. The KBS
+forwards it to the AS for verification against the RVPS. Upon a positive
+result, the KBS releases the requested resource (e.g., a decryption key) from
+the KMS backend.
 
 [diagram]
 
 ## End-to-End Flow
 
-A CVM attests to request a resource. The KBS appraises the attestation result before releasing a key or secret. Trustee can also delegate verification to external services (Intel Trust Authority, NVIDIA NRAS, etc.) and integrate with KMS, Vault, HSM, or Kubernetes Secrets as key backends.
+A CVM attests to request a resource. The KBS appraises the attestation result
+before releasing a key or secret. Trustee can also delegate verification to
+external services (Intel Trust Authority, NVIDIA NRAS, etc.) and integrate with
+KMS, Vault, HSM, or Kubernetes Secrets as key backends.
 
 [diagram]
 
@@ -1659,9 +1788,12 @@ GPU CC modes, driver support, and attestation tooling are evolving quickly. Chec
 
 ---
 
-# Hands-On Labs
+# Confidential Computing Hands-On Labs
 
-This chapter provides practical exercises to complement the concepts covered in previous chapters. The labs are designed to be independent — you can work through them in order or jump to the one most relevant to your environment.
+These hands-on confidential computing labs show how to deploy and attest
+confidential virtual machines and CNCF Confidential Containers. You will use
+Azure, Kubernetes, Trustee, cococtl, and peer pods in practical exercises that
+can be completed in order or independently.
 
 | Lab | What you'll do | Hardware needed |
 |-----|---------------|-----------------|
@@ -2877,7 +3009,12 @@ az group show --name byom-lab 2>/dev/null && echo "Still deleting..." || echo "D
 
 ---
 
-# References
+# Confidential Computing Resources and References
+
+Use this curated collection of confidential computing standards, research
+papers, documentation, and open-source projects to learn more about TEEs,
+remote attestation, confidential virtual machines, and CNCF Confidential
+Containers.
 
 ## Curated Resource List
 
@@ -2904,7 +3041,7 @@ For a comprehensive list of Confidential Computing resources, tools, papers, and
 |---|---|
 | [Securing Remote Computation (2016)](https://eprint.iacr.org/2016/086.pdf) | Foundational paper on the problem CC solves |
 | [Building Trust into OS Images for CoCo](https://confidentialcontainers.org/blog/2024/03/01/building-trust-into-os-images-for-confidential-containers/) | dm-verity and integrity protection for CVM images |
-| [Policing a Sandbox — CoCo](https://confidentialcontainers.org/blog/2023/09/12/policing-a-sandbox/) | Policy enforcement for CoCo workloads |
+| [Policing a Sandbox — CoCo](https://confidentialcontainers.org/blog/2024/08/15/policing-a-sandbox/) | Policy enforcement for CoCo workloads |
 | [CoCo Architecture](https://github.com/confidential-containers/documentation/blob/main/architecture.md) | Full CoCo architecture documentation |
 
 

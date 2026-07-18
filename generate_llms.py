@@ -13,27 +13,27 @@ SITE_URL = "https://cc-book.github.io/cc-book"
 # Conclusion, Glossary, and References are excluded because they contain no
 # substantive technical content needed by LLMs parsing the book.
 TOC = [
-    ("intro",              BOOK_DIR / "intro.md",                       "Introduction"),
+    ("intro",              BOOK_DIR / "intro.md",                       "Confidential Computing: A Practical Deep Dive"),
     ("trust-boundary",     CHAPTERS_DIR / "01_trust_boundary.md",       "The Trust Boundary Problem"),
     ("overview",           CHAPTERS_DIR / "02_overview.md",             "What is Confidential Computing?"),
-    ("use-cases",          CHAPTERS_DIR / "03_use_cases.md",            "Use Cases"),
-    ("building-blocks",    CHAPTERS_DIR / "04_building_blocks.md",      "Building Blocks"),
-    ("concepts",           CHAPTERS_DIR / "04a_concepts.md",            "Concepts"),
-    ("tee-technologies",   CHAPTERS_DIR / "04b_tee_technologies.md",    "TEE Technologies"),
-    ("remote-attestation", CHAPTERS_DIR / "05_remote_attestation.md",   "Remote Attestation"),
+    ("use-cases",          CHAPTERS_DIR / "03_use_cases.md",            "Confidential Computing Use Cases"),
+    ("building-blocks",    CHAPTERS_DIR / "04_building_blocks.md",      "Confidential Computing Building Blocks"),
+    ("concepts",           CHAPTERS_DIR / "04a_concepts.md",            "Confidential Computing Security Concepts"),
+    ("tee-technologies",   CHAPTERS_DIR / "04b_tee_technologies.md",    "TEE Technologies: AMD SEV-SNP, Intel TDX, and Intel SGX"),
+    ("remote-attestation", CHAPTERS_DIR / "05_remote_attestation.md",   "Remote Attestation for Confidential Computing"),
     ("known-attacks",      CHAPTERS_DIR / "05a_known_attacks.md",       "Known Attacks Against Confidential Computing"),
     ("three-pillars",      CHAPTERS_DIR / "06_three_pillars.md",        "Three Pillars of Confidential Computing"),
     ("confidential-vms",   CHAPTERS_DIR / "07_confidential_vms.md",     "Confidential Virtual Machine (CVM)"),
     ("confidential-containers", CHAPTERS_DIR / "09_confidential_containers.md", "Confidential Containers (CoCo)"),
-    ("confidential-clusters", CHAPTERS_DIR / "10_confidential_clusters.md", "Confidential Cluster"),
-    ("trustee",            CHAPTERS_DIR / "11_trustee.md",              "Trustee"),
+    ("confidential-clusters", CHAPTERS_DIR / "10_confidential_clusters.md", "Confidential Kubernetes Clusters"),
+    ("trustee",            CHAPTERS_DIR / "11_trustee.md",              "Trustee: Remote Attestation and Secret Management"),
     ("gpu-devices",        CHAPTERS_DIR / "11a_gpu_cc.md",              "Confidential Computing for GPUs and Devices"),
-    ("labs",               CHAPTERS_DIR / "12_labs.md",                 "Hands-On Labs"),
+    ("labs",               CHAPTERS_DIR / "12_labs.md",                 "Confidential Computing Hands-On Labs"),
     ("lab1-cvm-attestation", CHAPTERS_DIR / "12_lab1_cvm_attestation.md", "Lab 1: CVM Attestation on Azure"),
     ("lab2-coco-without-hw", CHAPTERS_DIR / "12_lab2_coco_without_hw.md", "Lab 2: CoCo Without Confidential Hardware"),
     ("lab3-cococtl",       CHAPTERS_DIR / "12_lab3_cococtl.md",         "Lab 3: CoCo-fy a Workload with cococtl"),
     ("lab4-byom",          CHAPTERS_DIR / "12_lab4_byom.md",            "Lab 4: CoCo on a Real CVM via Peer-Pods (BYOM)"),
-    ("references",         CHAPTERS_DIR / "13_references.md",           "References"),
+    ("references",         CHAPTERS_DIR / "13_references.md",           "Confidential Computing Resources and References"),
 ]
 
 
@@ -46,9 +46,10 @@ def extract_description(path: Path) -> str:
                 and not line.startswith("---") and not line.startswith("|") \
                 and not line.startswith(">") and not line.startswith("*") \
                 and not line.startswith("!"):
-            # Strip markdown bold/italic
+            # Strip markdown links and bold/italic from the summary.
+            line = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", line)
             line = re.sub(r"\*+([^*]+)\*+", r"\1", line)
-            return line[:200]
+            return line[:200].rstrip()
     return ""
 
 
@@ -67,8 +68,9 @@ def build_llms_txt() -> str:
     lines = [
         f"# Confidential Computing Deep Dive",
         f"",
-        f"> A comprehensive guide to Confidential Computing, TEEs, attestation,",
-        f"> Confidential VMs, and CNCF Confidential Containers (CoCo).",
+        f"> A practical guide to protecting data in use with Trusted Execution",
+        f"> Environments (TEEs), remote attestation, confidential VMs, Kubernetes,",
+        f"> and CNCF Confidential Containers (CoCo).",
         f"> Author: Pradipta Banerjee, Project Maintainer — Confidential Containers",
         f"",
         f"## Chapters",

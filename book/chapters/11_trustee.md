@@ -1,6 +1,10 @@
-# Trustee
+# Trustee: Remote Attestation and Secret Management
 
-[Trustee](https://github.com/confidential-containers/trustee) is the remote attestation solution for confidential containers and confidential VMs.
+[Trustee](https://github.com/confidential-containers/trustee) is the CNCF
+Confidential Containers remote attestation and secret-management solution for
+confidential containers and confidential virtual machines (CVMs). It verifies
+attestation evidence and releases keys, credentials, or other protected
+resources only to workloads that satisfy policy.
 
 Trustee implements the **Relying Party** and **Verifier** roles from the IETF RATS architecture, and consists of three sub-components:
 
@@ -22,7 +26,10 @@ There are also few other helper components inside the TEE:
 
 ## Architecture
 
-The CVM's Attestation Agent (AA) sends attestation evidence to the KBS. The KBS forwards it to the AS for verification against the RVPS. Upon a positive result, the KBS releases the requested resource (e.g., a decryption key) from the KMS backend.
+The CVM's Attestation Agent (AA) sends attestation evidence to the KBS. The KBS
+forwards it to the AS for verification against the RVPS. Upon a positive
+result, the KBS releases the requested resource (e.g., a decryption key) from
+the KMS backend.
 
 ```{figure} ../images/page_65.png
 :alt: Trustee Architecture
@@ -31,7 +38,10 @@ The CVM's Attestation Agent (AA) sends attestation evidence to the KBS. The KBS 
 
 ## End-to-End Flow
 
-A CVM attests to request a resource. The KBS appraises the attestation result before releasing a key or secret. Trustee can also delegate verification to external services (Intel Trust Authority, NVIDIA NRAS, etc.) and integrate with KMS, Vault, HSM, or Kubernetes Secrets as key backends.
+A CVM attests to request a resource. The KBS appraises the attestation result
+before releasing a key or secret. Trustee can also delegate verification to
+external services (Intel Trust Authority, NVIDIA NRAS, etc.) and integrate with
+KMS, Vault, HSM, or Kubernetes Secrets as key backends.
 
 ```{figure} ../images/page_66.png
 :alt: Trustee Architecture — end to end example

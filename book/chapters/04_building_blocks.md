@@ -1,6 +1,7 @@
-# Building Blocks
+# Confidential Computing Building Blocks
 
-Before diving into Confidential Containers, it helps to understand the foundational concepts and technologies that make confidential computing possible.
+Confidential computing combines hardware and software building blocks to protect data in use: a Root of Trust, a minimal Trusted Computing Base (TCB), Trusted Execution Environments (TEEs), measured boot, and remote attestation.
+Understanding how these pieces establish and verify trust is essential before starting to use confidential computing solutions.
 
 This section covers four areas:
 

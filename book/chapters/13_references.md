@@ -1,4 +1,9 @@
-# References
+# Confidential Computing Resources and References
+
+Use this curated collection of confidential computing standards, research
+papers, documentation, and open-source projects to learn more about TEEs,
+remote attestation, confidential virtual machines, and CNCF Confidential
+Containers.
 
 ## Curated Resource List
 

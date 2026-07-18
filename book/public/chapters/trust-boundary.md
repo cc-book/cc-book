@@ -1,12 +1,18 @@
 # The Trust Boundary Problem
 
-Cloud computing promises flexibility and scale. But it comes at a cost: when you run workloads on someone else's infrastructure, you must trust the infrastructure owner. Let's examine what that trust actually means, and why it is a deeper problem than it first appears.
+Running workloads on third-party infrastructure (eg. in public cloud) provides
+flexibility and scale.  But it comes at a cost: when you run workloads on
+someone else's infrastructure, you must trust the infrastructure owner. Let's
+examine what that trust actually means, and why it is a deeper problem than it
+first appears.
 
 ---
 
 ## Trust Boundary in Traditional Virtualisation
 
-In traditional virtualisation, the provider fully controls everything below the guest VM — the hypervisor, host OS, device firmware, and hardware. This means the provider can:
+In traditional virtualisation, the provider fully controls everything below the
+guest VM — the hypervisor, host OS, device firmware, and hardware. This means
+the provider can:
 
 - Inspect guest memory
 - Modify guest execution
@@ -42,7 +48,9 @@ The table below shows common security mechanisms, their intended protections and
 ```{admonition} The Core Problem
 :class: warning
 
-All software-based security controls can be bypassed by a sufficiently privileged attacker. The hypervisor sits *above* all guest software — it is the ultimate arbiter of what the guest sees and does.
+All software-based security controls can be bypassed by a sufficiently
+privileged attacker. The hypervisor sits *above* all guest software. It is the
+ultimate arbiter of what the guest sees and does.
 
 **Software cannot protect itself from the software below it.**
 

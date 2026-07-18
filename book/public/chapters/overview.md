@@ -1,5 +1,7 @@
 # What is Confidential Computing?
 
+Before getting to confidential computing, we must understand data security challenges and solutions.
+
 ## The Data Security Triad
 
 Modern data security is often described using three pillars:

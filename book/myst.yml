@@ -2,7 +2,7 @@
 version: 1
 project:
   title: Confidential Computing Deep Dive
-  description: A comprehensive guide to Confidential Computing, TEEs, and CNCF Confidential Containers.
+  description: Learn confidential computing with practical guidance on trusted execution environments, remote attestation, confidential VMs, Kubernetes, and CNCF Confidential Containers.
   github: https://github.com/cc-book/cc-book
   authors:
     - name: Pradipta Banerjee
@@ -17,22 +17,26 @@ project:
     - AMD SEV-SNP
     - Intel TDX
     - remote attestation
+    - data in use security
+    - confidential virtual machines
+    - confidential Kubernetes
+    - cloud security
   toc:
     - file: intro.md
     - title: The Trust Boundary Problem
       file: chapters/01_trust_boundary.md
     - title: What is Confidential Computing?
       file: chapters/02_overview.md
-    - title: Use Cases
+    - title: Confidential Computing Use Cases
       file: chapters/03_use_cases.md
-    - title: Building Blocks
+    - title: Confidential Computing Building Blocks
       file: chapters/04_building_blocks.md
       children:
-        - title: Concepts
+        - title: Confidential Computing Security Concepts
           file: chapters/04a_concepts.md
-        - title: TEE Technologies
+        - title: "TEE Technologies: AMD SEV-SNP, Intel TDX, and Intel SGX"
           file: chapters/04b_tee_technologies.md
-        - title: Remote Attestation
+        - title: Remote Attestation for Confidential Computing
           file: chapters/05_remote_attestation.md
         - title: Known Attacks Against Confidential Computing
           file: chapters/05a_known_attacks.md
@@ -43,13 +47,13 @@ project:
           file: chapters/07_confidential_vms.md
         - title: Confidential Containers (CoCo)
           file: chapters/09_confidential_containers.md
-        - title: Confidential Cluster
+        - title: Confidential Kubernetes Clusters
           file: chapters/10_confidential_clusters.md
-    - title: Trustee
+    - title: "Trustee: Attestation and Secret Management"
       file: chapters/11_trustee.md
     - title: Confidential Computing for GPUs and Devices
       file: chapters/11a_gpu_cc.md
-    - title: Hands-On Labs
+    - title: Confidential Computing Hands-On Labs
       file: chapters/12_labs.md
       children:
         - title: "Lab 1: CVM Attestation on Azure"
@@ -64,7 +68,7 @@ project:
       file: chapters/15_conclusion.md
     - title: Glossary
       file: chapters/14_glossary.md
-    - title: References
+    - title: Confidential Computing Resources and References
       file: chapters/13_references.md
 site:
   template: book-theme

@@ -1,6 +1,11 @@
-# Confidential Cluster
+# Confidential Kubernetes Clusters
 
-A **Confidential Cluster** is a Kubernetes cluster where **Confidential Virtual Machines (CVMs)** serve as Kubernetes nodes — both **worker nodes** (running workloads) and, in a full deployment, **control plane nodes** (API server, etcd, scheduler). Every node running inside a CVM means the cloud provider and infrastructure administrator cannot inspect node memory, including workloads, secrets, and cluster state.
+A **confidential Kubernetes cluster** uses **Confidential Virtual Machines
+(CVMs)** as Kubernetes nodes — both **worker nodes** that run workloads and, in
+a full deployment, **control plane nodes** that host the API server, etcd, and
+scheduler. Running every node inside a CVM prevents the cloud provider and
+infrastructure administrator from inspecting node memory, including workloads,
+secrets, and cluster state.
 
 ```{figure} ../images/page_36.png
 :alt: Confidential Cluster — Kubernetes nodes run inside CVMs
