@@ -70,6 +70,10 @@ Two attestation models are supported:
 :align: center
 ```
 
+### Transport Security
+
+Communication between the CVM and Trustee is protected at multiple layers. Trustee serves over HTTPS by default, with TLS certificates typically managed by cert-manager. The CVM pins the KBS certificate in its initdata configuration, so the Attestation Agent will only connect to the intended KBS instance. Because the initdata is measured into the TEE's launch measurement, any tampering with the pinned certificate changes the measurement and causes attestation to fail. This binds transport security to the attestation chain. As an additional safeguard, the Attestation Agent generates an ephemeral key pair inside the CVM and includes the public key in the attestation evidence as runtime data. The TEE hardware signs over this runtime data, binding the ephemeral key to the attestation report. Secrets released by the KBS are encrypted using this ephemeral public key, so even if the TLS channel were compromised, only the attested CVM holding the corresponding private key can decrypt the response.
+
 ---
 
 ## Workload APIs
