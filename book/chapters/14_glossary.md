@@ -13,6 +13,7 @@ Acronyms and key terms used throughout this book, listed alphabetically.
 | **CCA** | Confidential Compute Architecture | Arm's VM-based TEE architecture (Armv9), introducing Realms managed by the Realm Management Monitor |
 | **CDH** | Confidential Data Hub | CoCo component inside the CVM that acts as a proxy for secret retrieval |
 | **CNI** | Container Network Interface | Standard interface for Kubernetes pod networking plugins (e.g. Flannel, Calico) |
+| **CRI** | Container Runtime Interface | Kubernetes API that kubelet uses to talk to container runtimes such as containerd and CRI-O |
 | **CoCo** | Confidential Containers | CNCF project for running Kubernetes pods inside CVMs using Kata Containers |
 | **CoVE** | Confidential VM Extensions | RISC-V specification for VM-based TEEs |
 | **CVM** | Confidential Virtual Machine | A virtual machine running inside a TEE, with hardware-encrypted memory |
